@@ -7,7 +7,7 @@ class StudentAnswer_for_SingleProblem():
         self.problemID = problemID
         self.problemName = problemName
         self.studentLatexLst = latexList
-        self.points = -1
+        self.points = 0
         self.studentScoreDct = dict()
         problem_answer = build_Problem_Answer(problemID,problemName)
         def build_dct(node:Node):

@@ -77,6 +77,5 @@ def whether_rel_latex_correct(rel_latex,answer_latex,
 
 我们最终传入constants_latex_expression的，应当是这三部分的综合考虑。**你大概需要考虑一下应该传什么。当然，你也可以修正一下这套逻辑。**
 
-## 主程序部分使用（``multiStudents_compare_oneProblem.py``）
-1. 初始化考试信息，将所有学生ID填入``STUDENTS_ID_SET``中，将所有problem ID，problem Name的pair填入``PID_DICT``中。
-2. 最终程序会生成一个``All_Students_All_Answer_dict``，其中``All_Students_All_Answer_dict[studentID]``为一个``StudentAnswer_for_SingleProblem``类对象，包含有学生的作答（``studentLatexLst``），该题总分（``points``），每条式子（对应标答）得分（``studentScoreDct``）。
+## Multi-processing部分使用（``multiStudents_compare_oneProblem.py``）
+该部分包含一个``multiStudents_compare_oneProblem``函数，将多进程地判断多个学生同一道题的分数。该函数输入``problem_id``，``problem_name``，``All_Students_All_Answer_dict``，``students_id_set``四个参数。其中，``All_Students_All_Answer_dict``是一个包含所有学生的作答与分数的字典，以student ID作为key，而``All_Students_All_Answer_dict[student_id]``则是一个``StudentAnswer_for_SingleProblem``类对象，包含成员``studentLatexLst``表示学生作答，``points``表示学生该题总分，``studentScoreDct``表示学生每一题的分数；``students_id_set``则是一个包含所有student ID的set。该函数运行完毕后，会写入``All_Students_All_Answer_dict``中的学生``points``和``studentScoreDct``。
