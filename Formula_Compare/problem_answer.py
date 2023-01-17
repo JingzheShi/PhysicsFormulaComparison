@@ -52,7 +52,6 @@ class Formula():
 
 class Node():
     def __init__(self,dct,prefix_str,type,**kwargs):
-
         self.type=type
         parse_dct=dict()
         for inherit_key in inherit_lst:
