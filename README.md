@@ -77,5 +77,8 @@ def whether_rel_latex_correct(rel_latex,answer_latex,
 
 我们最终传入constants_latex_expression的，应当是这三部分的综合考虑。**你大概需要考虑一下应该传什么。当然，你也可以修正一下这套逻辑。**
 
-## Multi-processing部分使用（``multiStudents_compare_oneProblem.py``）
+## Problem Answer 结构
+每道题目的answer由许多``Node``类对象构成，其分为四种：root，part，solution，formula。其中root为根节点，每题从此处开始迭代；part为每题下各个小题；solution为每题或者每小题的不同解法（如果有）；formula则为具体公式。其中只有formula可以作为最终的叶节点，没有子节点，但是有其包含的分数与latex；其余均必须有子节点，但没有分数与latex。
+
+## Multi-processing 部分使用（``multiStudents_compare_oneProblem.py``）
 该部分包含一个``multiStudents_compare_oneProblem``函数，将多进程地判断多个学生同一道题的分数。该函数输入``problem_id``，``problem_name``，``All_Students_All_Answer_dict``，``students_id_set``四个参数。其中，``All_Students_All_Answer_dict``是一个包含所有学生的作答与分数的字典，以student ID作为key，而``All_Students_All_Answer_dict[student_id]``则是一个``StudentAnswer_for_SingleProblem``类对象，包含成员``studentLatexLst``表示学生作答，``points``表示学生该题总分，``studentScoreDct``表示学生每一题的分数；``students_id_set``则是一个包含所有student ID的set。该函数运行完毕后，会写入``All_Students_All_Answer_dict``中的学生``points``和``studentScoreDct``。
