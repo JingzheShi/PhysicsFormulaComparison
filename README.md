@@ -1,4 +1,29 @@
 # CPHOSS_Formula_Comparison
+## How to Use
+
+请把某一题目所有学生的答案以`.pth`格式保存。保存的是一个list，每一个list中的item都是一个字典。字典的关键字有：
+
+```markdown
+studentID: str, 
+latexList: list(str)
+```
+
+而请把某题目的答案以`config.py`形式保存。
+
+在调用时，请使用如下命令：
+
+```bash
+python scoring.py --problem_formulas_location /path/to/particular/problem_config.py --students_answers_location /path/to/all_students_answers.pth --problemName yourProblemName --problemID yourProblemID --N_process 8
+```
+
+其中N_process规定了公式比较中多进程时的进程数。
+
+
+
+
+
+
+
 the formula comparison part of Centralized Physics Olympiad Scoring System
 
 ## 大致思路（限定在一道题中）
@@ -9,7 +34,7 @@ the formula comparison part of Centralized Physics Olympiad Scoring System
 ``One_Student_One_Answer_Str_lst = All_Student_Answer_Str_lst[0]``
 ``One_Student_One_Answer_Str_lst['StudentID']=...``
 ``One_Student_One_Answer_Str_lst['AnswerLatexStr']=...``
-2. 另一边，通过``problem.Formula_Dct``,获得这个题所有的标答的formula，其中``problem``是``ProblemAnswer``类的一个实例
+2. 另一边，通过``problem.Formula_Dct``,获得这个题所有的标答的formula，其中``problem``是``problemFormulas``类的一个实例
 3. 生成一个``All_Students_All_Formula_Scores_Dct``，其中
 ``One_Student_All_Formula_Score = All_Students_All_Formula_Scores_Dct[StudentID]``
 ``type(One_Student_All_Formula_Score) = dict``
@@ -61,7 +86,7 @@ def whether_rel_latex_correct(rel_latex,answer_latex,
 
 
 
-一般而言呢，对于每一对(studentAnswer, correctFormula)，或者说对于一个correctFormula，我们都有一些可以视作常量的变量，比如知道杠杆一段加一个力f，求另一端的力F，使得力臂平衡，如果力臂之比是2:1. 那么答案是不是F=2f? 那么这时候，我们在这个式子的config.py里面，写上constants={'f'}，那么我们生成problemAnswer的时候，会把它改成一个字典:constants={'f':461}例如说，同时呢传入上面那个函数的字典可以是{'f':461}，表示我们这里把f看成是像m，kg，N一样的常数，计算时会带入461. 461是一个质数。
+一般而言呢，对于每一对(studentAnswer, correctFormula)，或者说对于一个correctFormula，我们都有一些可以视作常量的变量，比如知道杠杆一段加一个力f，求另一端的力F，使得力臂平衡，如果力臂之比是2:1. 那么答案是不是F=2f? 那么这时候，我们在这个式子的config.py里面，写上constants={'f'}，那么我们生成problemFormulas的时候，会把它改成一个字典:constants={'f':461}例如说，同时呢传入上面那个函数的字典可以是{'f':461}，表示我们这里把f看成是像m，kg，N一样的常数，计算时会带入461. 461是一个质数。
 
 但是，如果看成常数的是小方块质量m怎么办？这不是和米冲突了？那我们就把表示米的m从传入字典里删了，再加一个表示小方块质量的m。
 

@@ -1,4 +1,4 @@
-inherit_lst = ["to_be_calculated","constants","universe_constants","units","epsilon_for_equal","tolerable_diff_max","tolerable_diff_fraction"]
+inherit_lst = ["to_be_calculated","constants","universe_constants","units","strict_comparing_inequalities","epsilon_for_equal","tolerable_diff_max","tolerable_diff_fraction"]
 
 UNIVERSE_CONSTANTS_WEIGHTS = {r'c':float(300000000*1997/119),}
 UNIT_WEIGHTS={r'm':float(1.997),r'\kg':1.1451,r'\g':float(1.1451/1000),r'\cm':0.01997,r's':119,'J':float(1.1451*1.997**2/119**2)}
@@ -8,6 +8,7 @@ TOLERABLE_DIFF_FRACTION = 0.6
 PRIMES = [461,2089,641,787,4019, 809, 1871, 2969, 3089, 2591, 2129, 2381, 619, 1667, 2657, 2549, 3391, 1289, 3271, 1021, 1223, 3167, 3769, 3433, 2357, 3571, 1451, 4007, 3433, 2927, 3691, 3527, 3329, 2029, 3319, 3109, 2837, 3931, 3217, 2789, 3821, 3791, 2621, 3797, 2437, 3769]
 
 default_dct = {"to_be_calculated":dict(),"constants":dict(),"universe_constants":UNIVERSE_CONSTANTS_WEIGHTS,"units":UNIT_WEIGHTS,
+               "strict_comparing_inequalities":False,
                "epsilon_for_equal":EPSILON_FOR_EQUAL,"tolerable_diff_max":TOLERABLE_DIFF_MAX,"tolerable_diff_fraction":TOLERABLE_DIFF_FRACTION}
 
 class Formula():
@@ -111,12 +112,13 @@ class Node():
         
         
     
-class ProblemAnswer():
-    def __init__(self,dct,ProblemName,PID):
+class ProblemFormulas():
+    def __init__(self,dct,problemName,problemID,problemLocation):
         # it is recommanded that you use location of config file as PID.
-        self.problemName = ProblemName
-        self.PID = PID
-        self.root_node = Node(dct,'PLC_'+str(PID)+'PN_'+str(ProblemName)+'_FORMULAID_','root')
+        self.problemName = problemName
+        self.problemID = problemID
+        self.problemLocation = problemLocation
+        self.root_node = Node(dct,'PID:'+str(problemID)+'___PLC:'+str(problemLocation)+'_______ProblemName:'+str(problemName)+'____________________FORMULAID_','root')
         self.Formula_Dct = dict()
         def Go_Through_Tree(node:Node):
             #print("A")
@@ -128,33 +130,15 @@ class ProblemAnswer():
                     Go_Through_Tree(child_node)
         Go_Through_Tree(self.root_node)
     def evaluate(self,Student_Score_Dct):
-        return eval(self.root_node.evaluate_points(Student_Score_Dct))
+        return self.root_node.evaluate_points(Student_Score_Dct)
 
 
 
-
-import importlib
-import ast
-def build_Problem_Dict(config_file_location):
-
-    with open(config_file_location, 'r') as file:
-        content = file.read()
-        exec(content)
-
-    for name, value in locals().items():
-        if isinstance(value, dict):
-            #print(name, value)
-            return value
-def build_Problem_Answer(config_file_location,problemName):
-    problem_dct = build_Problem_Dict(config_file_location)
-    problemAnswer = ProblemAnswer(problem_dct,problemName,config_file_location)
-    return problemAnswer
-
-problemAnswer = build_Problem_Answer(r"./Formula_Compare/configs/question1_config.py","第一题")
-for key in problemAnswer.Formula_Dct:
-    print("===============================================================")
-    print(problemAnswer.Formula_Dct[key].TokenStr)
-    print(problemAnswer.Formula_Dct[key].describe)
-    print(problemAnswer.Formula_Dct[key].utils_dct)
-    print(problemAnswer.Formula_Dct[key].max_points)
-    print(problemAnswer.Formula_Dct[key].answer_latex)
+# problemFormulas = build_problem_formula(r"./Formula_Compare/configs/question1_config.py","第一题")
+# for key in problemFormulas.Formula_Dct:
+#     print("===============================================================")
+#     print(problemFormulas.Formula_Dct[key].TokenStr)
+#     print(problemFormulas.Formula_Dct[key].describe)
+#     print(problemFormulas.Formula_Dct[key].utils_dct)
+#     print(problemFormulas.Formula_Dct[key].max_points)
+#     print(problemFormulas.Formula_Dct[key].answer_latex)

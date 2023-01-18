@@ -160,7 +160,8 @@ def comparing_rel(rel1, rel2, strict_comparing_inequalities = False,  **kwargs):
         units_expression_weight = kwargs["constants_expression"]
     else:
         units_expression_weight = UNITS_EXPRESSION
-    assert len(rel2.free_symbols - set(units_expression)) >= 1, "The answer should not be composed of only constants!"
+    if not len(rel2.free_symbols - set(units_expression)) >= 1:
+        return False, "The answer is composed of constants."
 
     if (rel1.free_symbols-set(units_expression)) != (rel2.free_symbols-set(units_expression)):
         return False, "Different_Free_Variables"
@@ -258,7 +259,9 @@ def whether_rel_latex_correct_with_only_one_dict_parameter(dct):
         answer_latex
         constants_latex_expression
         strict_comparing_inequalities
-        e
+        epsilon_for_equal
+        tolerable_diff_fraction
+        tolerable_diff_max
     '''
     assert "rel_latex" in dct and "answer_latex" in dct, "rel_latex and answer_latex must be in dct"
     return whether_rel_latex_correct(**dct)
