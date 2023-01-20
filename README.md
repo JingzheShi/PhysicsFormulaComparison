@@ -1,4 +1,6 @@
 # CPHOSS_Formula_Comparison
+The formula comparison part of Centralized Physics Olympiad Scoring System
+
 ## How to Use
 
 请把某一题目所有学生的答案以`.pth`格式保存。保存的是一个list，每一个list中的item都是一个字典。字典的关键字有：
@@ -18,13 +20,6 @@ python scoring.py --problem_formulas_location /path/to/particular/problem_config
 
 其中N_process规定了公式比较中多进程时的进程数。
 
-
-
-
-
-
-
-the formula comparison part of Centralized Physics Olympiad Scoring System
 
 ## 大致思路（限定在一道题中）
 下面Answer指学生answer，Formula指标答formula
