@@ -48,14 +48,14 @@ def multiStudents_compare_oneProblem(problemFormulas:ProblemFormulas,studentsAns
                 ))
 
     with multiprocessing.Pool(processes=N_process) as pool:
-        output_compare_lst = pool.map(generate_answer_compare_lst, parsing_dcts_lst_root)
+        output_compare_lst = pool.map(generate_answer_compare_lst, parsing_dcts_lst_root,chunksize=5)
 
     for lst in output_compare_lst:
         del(lst[0])
         parsing_dcts_lst.extend(lst)
                 
     with multiprocessing.Pool(processes=N_process) as pool:
-        output_lst = pool.map(compare_problemFormula_with_studentAnswer, parsing_dcts_lst)
+        output_lst = pool.map(compare_problemFormula_with_studentAnswer, parsing_dcts_lst,chunksize=5)
     
     for parsing_dct in output_lst:
         studentID = parsing_dct['studentID']
