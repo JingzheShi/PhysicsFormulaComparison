@@ -33,16 +33,10 @@ def multiStudents_compare_oneProblem(problemFormulas:ProblemFormulas,studentsAns
     # parsing_dcts_lst_root = []
     parsing_dcts_lst = []
     
-    for studentID in studentsAnswersAndScores.keys():
-    #     parsing_dcts_lst_root.append([studentID])
-
-    # def generate_answer_compare_lst(input_lst):
-    #     studentID = input_lst[0]
-        for studentAnswerLatex in studentAnswersAndScores.studentLatexLst:
-            parsing_dcts_lst.append(dict(
-        # for formulaToken, formula in formulas_dct.items():
-        #     for studentAnswerLatex in studentsAnswersAndScores[studentID].studentLatexLst:
-        #         input_lst.append(dict(
+    for studentID,studentAnswersAndScores in studentsAnswersAndScores.items():
+        for formulaToken, formula in formulas_dct.items():
+            for studentAnswerLatex in studentAnswersAndScores.studentLatexLst:
+                parsing_dcts_lst.append(dict(
                     studentID = studentID,
                     formulaToken = formulaToken,
                     problemFormula = formula,
