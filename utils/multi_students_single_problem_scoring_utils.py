@@ -30,29 +30,31 @@ def compare_problemFormula_with_studentAnswer(dct):
 def multiStudents_compare_oneProblem(problemFormulas:ProblemFormulas,studentsAnswersAndScores:dict,N_process:int):
     #studentsAnswersAndScores: dict, key is studentID, value is of type Student_AnswersAndScores_for_SingleProblem
     formulas_dct = problemFormulas.Formula_Dct
-    parsing_dcts_lst_root = []
+    # parsing_dcts_lst_root = []
     parsing_dcts_lst = []
     
     for studentID in studentsAnswersAndScores.keys():
-        parsing_dcts_lst_root.append([studentID])
+    #     parsing_dcts_lst_root.append([studentID])
 
-    def generate_answer_compare_lst(input_lst):
-        studentID = input_lst[0]
-        for formulaToken, formula in formulas_dct.items():
-            for studentAnswerLatex in studentsAnswersAndScores[studentID].studentLatexLst:
-                input_lst.append(dict(
+    # def generate_answer_compare_lst(input_lst):
+    #     studentID = input_lst[0]
+        for studentAnswerLatex in studentAnswersAndScores.studentLatexLst:
+            parsing_dcts_lst.append(dict(
+        # for formulaToken, formula in formulas_dct.items():
+        #     for studentAnswerLatex in studentsAnswersAndScores[studentID].studentLatexLst:
+        #         input_lst.append(dict(
                     studentID = studentID,
                     formulaToken = formulaToken,
                     problemFormula = formula,
                     studentAnswerLatex = studentAnswerLatex
                 ))
 
-    with multiprocessing.Pool(processes=N_process) as pool:
-        output_compare_lst = pool.map(generate_answer_compare_lst, parsing_dcts_lst_root,chunksize=5)
+    # with multiprocessing.Pool(processes=N_process) as pool:
+    #     output_compare_lst = pool.map(generate_answer_compare_lst, parsing_dcts_lst_root,chunksize=5)
 
-    for lst in output_compare_lst:
-        del(lst[0])
-        parsing_dcts_lst.extend(lst)
+    # for lst in output_compare_lst:
+    #     del(lst[0])
+    #     parsing_dcts_lst.extend(lst)
                 
     with multiprocessing.Pool(processes=N_process) as pool:
         output_lst = pool.map(compare_problemFormula_with_studentAnswer, parsing_dcts_lst,chunksize=5)
