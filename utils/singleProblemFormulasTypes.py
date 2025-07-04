@@ -11,6 +11,10 @@ default_dct = {"to_be_calculated":dict(),"constants":dict(),"universe_constants"
                "strict_comparing_inequalities":False,
                "epsilon_for_equal":EPSILON_FOR_EQUAL,"tolerable_diff_max":TOLERABLE_DIFF_MAX,"tolerable_diff_fraction":TOLERABLE_DIFF_FRACTION}
 
+default_dct = {"to_be_calculated":dict(),"constants":dict(),"universe_constants":dict(),"units":dict(),
+               "strict_comparing_inequalities":False,
+               "epsilon_for_equal":EPSILON_FOR_EQUAL,"tolerable_diff_max":TOLERABLE_DIFF_MAX,"tolerable_diff_fraction":TOLERABLE_DIFF_FRACTION}
+
 class Formula():
     def __init__(self,dct,prefix_str,type,**kwargs):
         assert type == "formula", "Formula type need to be formula"
@@ -38,13 +42,20 @@ class Formula():
             if item in self.utils_dct["units"]:
                 self.utils_dct["units"].pop(item)
         new_constants_dct = dict()
+        # print(self.utils_dct["constants"])
         for index,item in enumerate(self.utils_dct["constants"]):
             if item in self.utils_dct["universe_constants"]:
                 self.utils_dct["universe_constants"].pop(item)
             if item in self.utils_dct["units"]:
                 self.utils_dct["units"].pop(item)
-            new_constants_dct[item] = PRIMES[index]
+            if isinstance(self.utils_dct["constants"], dict):
+                new_constants_dct[item] = self.utils_dct["constants"][item]
+            else:
+                new_constants_dct[item] = PRIMES[index]
+            
         self.utils_dct["constants"] = new_constants_dct
+        # print(self.utils_dct["universe_constants"])
+        # print(self.utils_dct["constants"])
         
             
             

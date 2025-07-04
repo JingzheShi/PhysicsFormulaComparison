@@ -143,7 +143,7 @@ def is_almost_equivalent(eq1, eq2, variables=None, tol=1e-6, n_trials=20, sample
     
     trial = 0
     
-    indicator_str = f"{eq1} COMPARING_WITH {eq2} with tol={tol}, n_trials={n_trials}, sample_range={sample_range}, variables={variables} for is_almost_equivalent"
+    indicator_str = f"{eq1} ~ {eq2} with tol={tol}, n_trials={n_trials}, sample_range={sample_range}, variables={variables} for is_almost_equivalent"
     while (passed_trials + ineq_trials < n_trials):
         trial += 1
         if trial >= max_trials and (passed_trials + ineq_trials == 0):
@@ -309,41 +309,39 @@ def same_rel_metric(div,org_rel_diff,left_minus_right, **kwargs):
     # print(div)
     div_count = count_ops(div, visual=False)
     org_count = count_ops(org_rel_diff)
-    return is_almost_equivalent(org_rel_diff, left_minus_right, tol=epsilon_for_equal_for_randomlySample,
-                if_print=False)
-    # if whether_data_with_unit(org_rel_diff,units_expression) and 0:
-    #     #So the original equation is like : M_A = 1\kg
-    #     if whether_data_with_unit(div,units_expression):
-    #         free_var_lst, unit_var_lst = get_unit_and_free_variable(div,units_expression=units_expression)
-    #         assert len(free_var_lst) == 1, "In the data with unit case there should be exactly one free variable."
-    #         free_var = free_var_lst[0]
-    #         #first, set the units to be 1, and the actual free variable to be 0.
+    if whether_data_with_unit(org_rel_diff,units_expression) and 0:
+        #So the original equation is like : M_A = 1\kg
+        if whether_data_with_unit(div,units_expression):
+            free_var_lst, unit_var_lst = get_unit_and_free_variable(div,units_expression=units_expression)
+            assert len(free_var_lst) == 1, "In the data with unit case there should be exactly one free variable."
+            free_var = free_var_lst[0]
+            #first, set the units to be 1, and the actual free variable to be 0.
 
-    #         dct={unit_var: units_expression_weight[unit_var] for unit_var in unit_var_lst}
-    #         left_minus_right.subs(dct)
-    #         sol1 = solve(left_minus_right,free_var)
-    #         org_rel_diff.subs(dct)
-    #         sol2 = solve(org_rel_diff,free_var)
-    #         if sol1 and sol2:
-    #             div = sol1[0]/sol2[0]
-    #             if abs(div-1) <= epsilon_for_equal:
-    #                 return True,"Almost_Same_Value_Differing less than {}".format(epsilon_for_equal)
-    #             else:
-    #                 return False, "Different Value differing by more than {}".format(epsilon_for_equal)
-    #         elif sol2 and (not sol1):
-    #             return False, "Different Value"
-    #         else:
-    #             assert False, "Cannot solve for free variable."
-    #     else:
-    #         return False, "The answer is a constant, but the student's answer is not."
-    # else:
-    #     return is_almost_equivalent(org_rel_diff, left_minus_right, tol=epsilon_for_equal_for_randomlySample, if_print=False)
+            dct={unit_var: units_expression_weight[unit_var] for unit_var in unit_var_lst}
+            left_minus_right.subs(dct)
+            sol1 = solve(left_minus_right,free_var)
+            org_rel_diff.subs(dct)
+            sol2 = solve(org_rel_diff,free_var)
+            if sol1 and sol2:
+                div = sol1[0]/sol2[0]
+                if abs(div-1) <= epsilon_for_equal:
+                    return True,"Almost_Same_Value_Differing less than {}".format(epsilon_for_equal)
+                else:
+                    return False, "Different Value differing by more than {}".format(epsilon_for_equal)
+            elif sol2 and (not sol1):
+                return False, "Different Value"
+            else:
+                assert False, "Cannot solve for free variable."
+        else:
+            return False, "The answer is a constant, but the student's answer is not."
+    else:
+        return is_almost_equivalent(org_rel_diff, left_minus_right, tol=epsilon_for_equal_for_randomlySample, if_print=False)
         
-    #     # deprecated
-    #     if is_almost_constant(div, div.free_symbols, tol=epsilon_for_equal_for_randomlySample, if_print=False):
-    #         return True, f"(eq1lhs-eq1rhs)/(eq2lhs-eq2rhs) is {div}, which is almost constant"
-    #     else:
-    #         pass
+        # deprecated
+        if is_almost_constant(div, div.free_symbols, tol=epsilon_for_equal_for_randomlySample, if_print=False):
+            return True, f"(eq1lhs-eq1rhs)/(eq2lhs-eq2rhs) is {div}, which is almost constant"
+        else:
+            pass
             # we have already substitude all constants and units in comparing_rel, so no need to check again!
             # print(org_rel_diff, 'awaefjaoweife')
             # print(left_minus_right, 'bawoefijaweiof')
@@ -388,13 +386,12 @@ def comparing_eqs(eq1,eq2, **kwargs):
     sol = solve(eq3-w,w)
     
     if len(sol) >= 1:
-        return same_rel_metric(sol[0],expr2,expr1, **kwargs)
-        # if sol[0].is_constant():
-        #     return True, "Same_Equality"
+        if sol[0].is_constant():
+            return True, "Same_Equality"
         
-        # else:
-        #     return same_rel_metric(sol[0],expr2,expr1, **kwargs)
+        else:
             # print(sol, 'aweuifhawope9ifawe')
+            return same_rel_metric(sol[0],expr2,expr1, **kwargs)
             #return False, "Different_Equality"
     else:
         return False, "Different_Equation"
@@ -548,21 +545,21 @@ if (__name__=="__main__"):
     Number_Of_Missions = 100
     units_latex['c'] = '30 m / s'
     # param_list = [{"rel_latex":"E>M c^2","answer_latex":"M<E/(c)^2","constants_latex_expression":{'c':float(300000000*7)/(float(11)**2), 'm':7, 's':11,'M':1997}}]*Number_Of_Missions
-    param_list = [{"rel_latex":"E = \\sqrt{(m_{min} + \\mu_b)} * c^2 + mhg","answer_latex":"(E-mhg) / c^2 = ( m_{min} + \\mu_b )^0.5","constants_latex_expression":dict(m=3)}, ] * Number_Of_Missions
+    param_list = [{"rel_latex":"E = (m_{min} + \\mu_b)^0.5 * c^2 + mhg","answer_latex":"(E-mhg) / c^2 = ( m_{min} + \\mu_b )^0.5","constants_latex_expression":dict(m=3)}, ] * Number_Of_Missions
                 #   {"rel_latex":"E / c^2 = ( - m_{a2} + \\mu_b )^0.5","answer_latex":"E = (-m_{a2} + \\mu_b)^0.5 c^2","constants_latex_expression":{'c': float(300000000)}}]
-    # param_list = [{"rel_latex":"E = m","answer_latex":"0.1E - m/10 = 0","constants_latex_expression":dict(m=3)}, ] * Number_Of_Missions
+    param_list = [{"rel_latex":"E = m","answer_latex":"0.1E - m/10 = 10^{-11}","constants_latex_expression":dict(m=3)}, ] * Number_Of_Missions
     
     print(whether_rel_latex_correct_with_only_one_dict_parameter(param_list[0]))
     
-    N_Thread = 8
-    start = time.time()
-    with Pool(N_Thread) as p:
-        r = list(tqdm(p.map(whether_rel_latex_correct_with_only_one_dict_parameter, param_list), total=len(param_list), desc='testing'))
-    end = time.time()
-    print("Time for N_Thread = {}: ".format(N_Thread), end-start)
-    # save r into json file.
-    import json
-    # use 4 as tab indent.
-    with open("result.json", "w") as f:
-        json.dump(r, f, indent=4)
-    print(r)
+    # N_Thread = 8
+    # start = time.time()
+    # with Pool(N_Thread) as p:
+    #     r = list(tqdm(p.map(whether_rel_latex_correct_with_only_one_dict_parameter, param_list), total=len(param_list), desc='testing'))
+    # end = time.time()
+    # print("Time for N_Thread = {}: ".format(N_Thread), end-start)
+    # # save r into json file.
+    # import json
+    # # use 4 as tab indent.
+    # with open("result.json", "w") as f:
+    #     json.dump(r, f, indent=4)
+    # print(r)

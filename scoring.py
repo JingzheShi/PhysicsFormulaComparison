@@ -11,7 +11,7 @@ def parse_arguements():
     parser = ArgumentParser()
     parser.add_argument('--problem_formulas_location', type=str, default='problemFormulas/questions_config.json')
     parser.add_argument('--students_answers_location', type=str, default='studentsAnswers/students_answers.json')
-    parser.add_argument('--N_process',type=int,default=8)
+    parser.add_argument('--N_process',type=int,default=14)
     
     return parser.parse_args()
 def convert_constant_lists_to_sets(d):
@@ -30,7 +30,6 @@ if __name__ == '__main__':
     print(args)
     
     problemFormulas = json.load(open(args.problem_formulas_location,'r',encoding='utf-8'))
-    convert_constant_lists_to_sets(problemFormulas)
     studentsAnswers = json.load(open(args.students_answers_location,'r',encoding='utf-8'))
     
     problemsList = build_problem_formulas_for_multiProblems(problemFormulas)

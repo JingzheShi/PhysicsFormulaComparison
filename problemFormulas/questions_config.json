@@ -1,48 +1,27 @@
 {
-    "p1": {
-        "points": 40,
+    "problemID1_sieur": {
+        "points": 10,
         "part_1": {
             "points": 10,
             "solution_1": {
                 "points": 10,
                 "formula_1": {
                     "points": 4,
-                    "answer_latex": "E = m c^2"
+                    "answer_latex": "m = m_a + m_b"
                 },
                 "formula_2": {
-                    "points": 6,
-                    "answer_latex": "x^2 + y^2 = z^2"
+                    "points": 10,
+                    "answer_latex": "E = (m_{min} + \\mu_b) c^2 + mhg"
                 }
             },
             "solution_2": {
-                "points":9,
+                "points":10,
+                "formula_describe" : "AnswerCorrect",
                 "formula_1":{
-                    "points": 9,
-                    "answer_latex": "E = m c^2"
+                    "points": 10,
+                    "answer_latex": "E = (m_a + m_b) c^2"
                 }
             }
-        },
-        "part_2": {
-            "points": 30,
-            "formula_1": {
-                "formula_describe": "test_formula",
-                "points": 30,
-                "answer_latex": "m =2 alpha kg"
-            }
-        },
-        "constants": ["m"]
-    },
-
-    "p2":{
-        "points": 50,
-        "formula_1": {
-            "points": 20,
-            "answer_latex": "a^2 + b^2 = c^2"
-            },
-        "formula_2": {
-                "points": 30,
-                "answer_latex": "F = m a"
-            }
-        
+        }
     }
 }
