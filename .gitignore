@@ -1,0 +1,82 @@
+# Python caches and compiled files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environments
+venv/
+.env/
+.venv/
+env/
+ENV/
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints
+
+# VSCode editor files
+.vscode/
+
+# PyCharm editor files
+.idea/
+
+# macOS specific files
+.DS_Store
+
+# Logs
+logs/
+*.log
+
+# Data files (uncomment if needed)
+# data/
+# *.csv
+# *.tsv
+
+# Sensitive config files
+*.env
+*.ini
+*.yaml
+*.yml
+config.json
+secret.json
+
+# Build artifacts
+dist/
+build/
+*.egg-info/
+
+# System generated files
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# Temporary files
+*.tmp
+*.temp
+
+# Backup files
+*.bak
+*.swp
+
+# Debugger or profiling output
+*.prof
+
+# Test coverage
+htmlcov/
+.coverage
+
+# pytest cache
+.pytest_cache/
+
+# Node modules (if using frontend integration)
+node_modules/
+
+# General caches
+.cache/
+.cache
+
+# MyPy cache
+.mypy_cache/
+
+# Custom project-specific exclusions
+output/
+results/

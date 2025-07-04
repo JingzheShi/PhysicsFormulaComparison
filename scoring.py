@@ -1,37 +1,52 @@
 from argparse import ArgumentParser
 from utils import Formula
-from utils import build_problem_formula,build_Student_AnswersAndScores_for_SingleProblem_from_pth
-from utils import multiStudents_compare_oneProblem
+from utils import build_problem_formula,build_Student_AnswersAndScores_for_SingleProblem_from_pth, build_Student_AnswersAndScores_for_MultiProblem_from_dict
+from utils import multiStudents_compare_oneProblem, multiStudent_compare_multiProblem
+from utils import build_problem_formulas_for_multiProblems, build_Student_AnswersAndScores_for_MultiProblem_from_dict
+import json
+import os
+
+
 def parse_arguements():
     parser = ArgumentParser()
-    parser.add_argument('--problem_formulas_location', type=str, default='problemFormulas/question1_config.py')
-    parser.add_argument('--students_answers_location', type=str, default='studentsAnswers/students_answers_for_question1.pth')
-    parser.add_argument('--problemName',type=str,default='question1')
-    parser.add_argument('--problemID',type=str,default="question1ID_test1sodifa;e")
+    parser.add_argument('--problem_formulas_location', type=str, default='problemFormulas/questions_config.json')
+    parser.add_argument('--students_answers_location', type=str, default='studentsAnswers/students_answers.json')
     parser.add_argument('--N_process',type=int,default=8)
     
     return parser.parse_args()
-
+def convert_constant_lists_to_sets(d):
+    if isinstance(d, dict):
+        for k, v in d.items():
+            if isinstance(v, dict):
+                convert_constant_lists_to_sets(v)
+            elif 'constant' in k and isinstance(v, list):
+                d[k] = set(v)
+    elif isinstance(d, list):
+        for item in d:
+            convert_constant_lists_to_sets(item)
 if __name__ == '__main__':
     args = parse_arguements()
     print("args:")
     print(args)
     
-    problemFormulas = build_problem_formula(args.problem_formulas_location,args.problemName,problemID = args.problemID)
-    studentsAnswersAndScores = build_Student_AnswersAndScores_for_SingleProblem_from_pth(problemFormulas,args.students_answers_location)
-    # The studentsAnswersAndScores should be a list of type dict.
-    # The items of this dict is:
-    # studentID: studentID
-    # latexList: a list of latex string, of this student.
+    problemFormulas = json.load(open(args.problem_formulas_location,'r',encoding='utf-8'))
+    convert_constant_lists_to_sets(problemFormulas)
+    studentsAnswers = json.load(open(args.students_answers_location,'r',encoding='utf-8'))
     
-    print("Now start to compare the answers of students with the formulas of the problem, using multiprocessing")
-    multiStudents_compare_oneProblem(problemFormulas,studentsAnswersAndScores,args.N_process)
-    print("Finishing comparing using multiprocessing.")
-    for studentID, this_student_answerAndScore_for_singleProblem in studentsAnswersAndScores.items():
-        print("studentID: ",studentID)
-        print("points: ",this_student_answerAndScore_for_singleProblem.points)
-        print("studentScoreDct: ",this_student_answerAndScore_for_singleProblem.studentScoreDct)
-        print("points: ",this_student_answerAndScore_for_singleProblem.points)
+    problemsList = build_problem_formulas_for_multiProblems(problemFormulas)
+    studentsAnswersAndScores = build_Student_AnswersAndScores_for_MultiProblem_from_dict(problemsList,studentsAnswers)
+
+    multiStudent_compare_multiProblem(problemsList, studentsAnswersAndScores, args.N_process)
+
+    for studentID, student_answersAndScores_for_problems in studentsAnswersAndScores.items():
+        # print("studentID: ", studentID)
+        for problemID, this_student_answerAndScore_for_singleProblem in student_answersAndScores_for_problems.items():
+            # print("problemID: ", problemID)
+            # print("points: ", this_student_answerAndScore_for_singleProblem.points)
+            # print("studentScoreDct: ", this_student_answerAndScore_for_singleProblem.studentScoreDct)
+            # print("points: ", this_student_answerAndScore_for_singleProblem.points)
+            print(f"Student {studentID} Problem {problemID} Points: {this_student_answerAndScore_for_singleProblem.points}")
+    
     
     
     

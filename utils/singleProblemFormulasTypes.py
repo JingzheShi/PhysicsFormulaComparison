@@ -53,6 +53,7 @@ class Formula():
 
 class Node():
     def __init__(self,dct,prefix_str,type,**kwargs):
+        
         self.type=type
         parse_dct=dict()
         for inherit_key in inherit_lst:
@@ -94,6 +95,7 @@ class Node():
             while ("formula_{}".format(s) in dct):
                 self.children_lst.append(Formula(dct["formula_{}".format(s)],self.prefix_str+'+{}'.format(s),"formula",**parse_dct))
                 s+=1
+
             #assert sum([child.max_points for child in self.children_lst]) == self.max_points, "Points in formulas should be equal to the points in its father"
     def evaluate_points(self,Student_Score_Dct):
         part_score = float(0)
@@ -113,7 +115,7 @@ class Node():
         
     
 class ProblemFormulas():
-    def __init__(self,dct,problemName,problemID,problemLocation):
+    def __init__(self,dct,problemName,problemID,problemLocation = 'unspecified'):
         # it is recommanded that you use location of config file as PID.
         self.problemName = problemName
         self.problemID = problemID
