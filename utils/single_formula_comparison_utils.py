@@ -1,12 +1,30 @@
 from sympy import *
-from sympy.parsing.latex import parse_latex
+from sympy.parsing.latex import parse_latex 
 units_latex={r'\kg':3,r'\s':7,r'\m':11,r'\A':13,r'\K':17,r'\g':0.003}
 UNITS_LATEX = units_latex
 UNITS_EXPRESSION = {parse_latex(x):units_latex[x] for x in units_latex}
 EPSILON_FOR_EQUAL = 1e-2
-RELA_EPSILON_FOR_ALMOST_CONSTANT_EVAL = 1e-10
+RELA_EPSILON_FOR_ALMOST_CONSTANT_EVAL = 1e-5
 TOLERABLE_DIFF_MAX = 5
 TOLERABLE_DIFF_FRACTION = 0.6
+
+
+import sympy as sp
+import concurrent.futures
+import stopit
+def solve_with_timeout(eq, var, timeout=0.3):
+    result = None
+    with stopit.ThreadingTimeout(timeout) as tt:
+        result = sp.solve(eq, var)
+    return result
+
+# import sys
+
+# def ignore_unraisable_exception(unraisable):
+#     # You can also log it if you wish
+#     pass
+
+# sys.unraisablehook = ignore_unraisable_exception
 
 
 import sympy as sp
@@ -124,8 +142,8 @@ if 0:
 import sympy as sp
 import numpy as np
 
-def is_almost_equivalent(eq1, eq2, variables=None, tol=1e-6, n_trials=20, sample_range=(-20, 20), if_print=False,
-                         max_trials = 30, atleast_trial_when_possible=2, maxmaxtrial=60):
+def is_almost_equivalent(eq1, eq2, variables=None, tol=1e-6, n_trials=15, sample_range=(-20, 20), if_print=False,
+                         max_trials = 20, atleast_trial_when_possible=10, maxmaxtrial=40):
     """
     Compare if two sympy equations eq1 and eq2 are almost equivalent by checking their roots numerically.
     Handles multi-root cases by sorting and pairwise comparison.
@@ -144,25 +162,41 @@ def is_almost_equivalent(eq1, eq2, variables=None, tol=1e-6, n_trials=20, sample
     trial = 0
     
     indicator_str = f"{eq1} COMPARING_WITH {eq2} with tol={tol}, n_trials={n_trials}, sample_range={sample_range}, variables={variables} for is_almost_equivalent"
-    while (passed_trials + ineq_trials < n_trials):
+    timeout_var_list = []
+    while (passed_trials + ineq_trials <= n_trials):
         trial += 1
-        if trial >= max_trials and (passed_trials + ineq_trials == 0):
+        if trial > max_trials and (passed_trials + ineq_trials == 0):
             # already reached max_trials, but all trials failed.
             break
-        elif trial >= max_trials and (passed_trials + ineq_trials != 0):
+        elif trial > max_trials and (passed_trials + ineq_trials != 0):
             # already reached max_trials, but some trials passed.
-            if passed_trials + ineq_trials >= atleast_trial_when_possible: # 
+            if passed_trials + ineq_trials > atleast_trial_when_possible: # 
                 break
-            if trial >= maxmaxtrial:
+            if trial > maxmaxtrial:
                 break
-        solve_var = rng.choice(variables)
+        if len(timeout_var_list) == len(variables):
+            # All variables have been tried and timed out, no point in continuing
+            indicator_str = "Time Out when solving for variables " + str(timeout_var_list) + ", so stopping trials." + indicator_str
+            if if_print:
+                print(f"All variables {variables} have timed out, stopping trials.")
+            break
+        left_vars = [v for v in variables if v not in timeout_var_list]
+        solve_var = rng.choice(left_vars)
         subst_vars = [v for v in variables if v != solve_var]
         subs = {v: float(rng.uniform(*sample_range)) for v in subst_vars}
         try:
             eq1_sub = eq1.subs(subs)
             eq2_sub = eq2.subs(subs)
-            sol1 = sp.solve(eq1_sub, solve_var)
-            sol2 = sp.solve(eq2_sub, solve_var)
+            
+            sol1 = solve_with_timeout(eq1_sub, solve_var)
+            sol2 = solve_with_timeout(eq2_sub, solve_var)
+            if sol1 is None or sol2 is None:
+                timeout_var_list.append(solve_var)
+                if if_print:
+                    print(f"Trial {trial}: {solve_var} | sol1={sol1}, sol2={sol2}, which timed out, so this trial failed")
+                failed_trials += 1
+                continue
+            
 
             # Convert solutions to complex, skip if any is not a number
             try:
@@ -545,13 +579,15 @@ if (__name__=="__main__"):
     import time
     from tqdm import tqdm
     from multiprocessing import Pool
-    Number_Of_Missions = 100
+    Number_Of_Missions = 1
     units_latex['c'] = '30 m / s'
     # param_list = [{"rel_latex":"E>M c^2","answer_latex":"M<E/(c)^2","constants_latex_expression":{'c':float(300000000*7)/(float(11)**2), 'm':7, 's':11,'M':1997}}]*Number_Of_Missions
     param_list = [{"rel_latex":"E = \\sqrt{(m_{min} + \\mu_b)} * c^2 + mhg","answer_latex":"(E-mhg) / c^2 = ( m_{min} + \\mu_b )^0.5","constants_latex_expression":dict(m=3)}, ] * Number_Of_Missions
                 #   {"rel_latex":"E / c^2 = ( - m_{a2} + \\mu_b )^0.5","answer_latex":"E = (-m_{a2} + \\mu_b)^0.5 c^2","constants_latex_expression":{'c': float(300000000)}}]
     # param_list = [{"rel_latex":"E = m","answer_latex":"0.1E - m/10 = 0","constants_latex_expression":dict(m=3)}, ] * Number_Of_Missions
-    
+    param_list = [{"rel_latex":r"m/b *(e^{b/m*x}-1)=V_0 t","answer_latex":r"e^{b /m *x} = 1 + {b V_0}/m*t",
+                   "constants_latex_expression":{}}, ] * Number_Of_Missions
+
     print(whether_rel_latex_correct_with_only_one_dict_parameter(param_list[0]))
     
     N_Thread = 8
