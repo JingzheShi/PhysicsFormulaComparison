@@ -39,6 +39,8 @@ def multiStudent_compare_multiProblem(problemFormulasList:list,studentsAnswersAn
     for studentID,studentAnswersAndScores in studentsAnswersAndScores.items():
         for problemformula_for_oneproblem in problemFormulasList:
             problemID = problemformula_for_oneproblem.problemID
+            if problemID not in studentAnswersAndScores:
+                continue
             assert problemID in studentAnswersAndScores, f"Problem ID {problemID} not found in student answers and scores for student {studentID}"
             studentAnswersAndScoresForThisProblem = studentAnswersAndScores[problemID]
             for formulaToken, formula in problemformula_for_oneproblem.Formula_Dct.items():
@@ -73,6 +75,9 @@ def multiStudent_compare_multiProblem(problemFormulasList:list,studentsAnswersAn
         problemID = problemFormulas.problemID
         for studentID, student_answersAndScores_for_SingleProblem in studentsAnswersAndScores.items():
             if problemID in student_answersAndScores_for_SingleProblem:
+                if problemID not in student_answersAndScores_for_SingleProblem:
+                    continue
+                assert problemID in student_answersAndScores_for_SingleProblem, f"Problem ID {problemID} not found in student answers and scores for student {studentID}"
                 student_answersAndScores_for_SingleProblem[problemID].points = problemFormulas.evaluate(
                     student_answersAndScores_for_SingleProblem[problemID].studentScoreDct
                 )

@@ -1,0 +1,6 @@
+[
+    [
+        true,
+        "Passed 16 trials, ineq 0 trials, unsuccessful 3 trials. 2.71828182845905**(b*x/m) - V_{0}*b*s/m - 1 COMPARING_WITH (-V_{0}*b*s + m*(2.71828182845905**(b*x/m) - 1))/b with tol=1e-05, n_trials=15, sample_range=(-20, 20), variables=[b, V_{0}, x, s, m] for is_almost_equivalent"
+    ]
+]

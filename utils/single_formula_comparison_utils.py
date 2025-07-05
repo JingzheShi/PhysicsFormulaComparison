@@ -257,10 +257,16 @@ def is_almost_equivalent(eq1, eq2, variables=None, tol=1e-6, n_trials=15, sample
                 print(f"Trial {trial}: Exception {e}")
             continue
     if passed_trials + ineq_trials == 0:
+        if if_print:
+            print(False, f"No passed trials when comparing is_almost_equivalent for {eq1} and {eq2}, failed_trials={failed_trials} " + indicator_str)
         return False, f"No passed trials when comparing is_almost_equivalent for {eq1} and {eq2}, failed_trials={failed_trials} " + indicator_str
     if ineq_trials == 0 and passed_trials + ineq_trials >= min([atleast_trial_when_possible, n_trials]):
+        if if_print:
+            print(True, f"Passed {passed_trials} trials, ineq {ineq_trials} trials, unsuccessful {failed_trials} trials. " + indicator_str)
         return True, f"Passed {passed_trials} trials, ineq {ineq_trials} trials, unsuccessful {failed_trials} trials. " + indicator_str
     else:
+        if if_print:
+            print(False, f"Only passed {passed_trials}, ineq {ineq_trials} trials, failed_trials {failed_trials}. " + indicator_str)
         return False, f"Only passed {passed_trials}, ineq {ineq_trials} trials, failed_trials {failed_trials}. " + indicator_str
 
 
@@ -448,6 +454,14 @@ def comparing_geq_or_leq(rel1_lhs,rel1_rhs,rel2_lhs,rel2_rhs, **kwargs):
             #return False, "Wrong_Inequality"
     else:
         return False, "Wrong_Equation"
+    
+def is_numeric(some_expr):
+    try:
+        numeric_value = float(some_expr)
+        return True
+    except Exception:
+        return False
+    assert False, "This line should not be called, as it is not implemented yet. Please implement it if you need to use it."
 
 def comparing_rel(rel1, rel2, strict_comparing_inequalities = False,  **kwargs):
     if rel1 == None or rel2 == None:
@@ -471,12 +485,41 @@ def comparing_rel(rel1, rel2, strict_comparing_inequalities = False,  **kwargs):
     
     _,unit_var_lst_2 = get_unit_and_free_variable(rel2,units_expression=units_expression)
     dct_2 = {unit_var: units_expression_weight[unit_var] for unit_var in unit_var_lst_2}
+    
+    dct_1_numeric = {k: v for k, v in dct_1.items() if not is_numeric(v)}
+    dct_2_numeric = {k: v for k, v in dct_2.items() if not is_numeric(v)}
+    dct_1_str = {k: v for k, v in dct_1.items() if is_numeric(v)}
+    dct_2_str = {k: v for k, v in dct_2.items() if is_numeric(v)}
+    
+    if len(dct_1_str) > 0 or len(dct_2_str) > 0:
+        if len(dct_1_str) > 0:
+            dct_1_sympy = {k: sp.sympify(v) for k, v in dct_1_str.items()}
+        if len(dct_2_str) > 0:
+            dct_2_sympy = {k: sp.sympify(v) for k, v in dct_2_str.items()}
+        rel1 = rel1.subs(dct_1_sympy)
+        rel2 = rel2.subs(dct_2_sympy)
+        # check again for unit expressions. For example, if we substitde "kg=1000*g", while "g=114514", we have to substitute "g" again.
+        _, unit_var_lst_1 = get_unit_and_free_variable(rel1,units_expression=units_expression)
+        _, unit_var_lst_2 = get_unit_and_free_variable(rel2,units_expression=units_expression)
+        dct_1 = {unit_var: units_expression_weight[unit_var] for unit_var in unit_var_lst_1}
+        dct_2 = {unit_var: units_expression_weight[unit_var] for unit_var in unit_var_lst_2}
+        dct_1_numeric = {k: v for k, v in dct_1.items() if not is_numeric(v)}
+        dct_2_numeric = {k: v for k, v in dct_2.items() if not is_numeric(v)}
+
+    if len(dct_1_numeric) > 0:
+        rel1 = rel1.subs(dct_1_numeric)
+    if len(dct_2_numeric) > 0:
+        rel2 = rel2.subs(dct_2_numeric)
+        
+    
+    # # plug in dct_1_str and dct_2_str to rel1 and rel2.
+    # if 
+    
     # print(dct_1, 'awefiawjeo;fijawef')
     # print(dct_2, 'bweo;ifawoleiawfe')
     # print(units_expression, 'cawpeofijawpeioe')
     # print(units_expression_weight, 'dawiefjawoleif')
-    rel1 = rel1.subs(dct_1)
-    rel2 = rel2.subs(dct_2)
+    # print(rel1, rel2, 'eljkfghls')
     
     if type(rel1) == Equality:
         if type(rel2) == Equality:
@@ -581,13 +624,18 @@ if (__name__=="__main__"):
     from multiprocessing import Pool
     Number_Of_Missions = 1
     units_latex['c'] = '30 m / s'
-    # param_list = [{"rel_latex":"E>M c^2","answer_latex":"M<E/(c)^2","constants_latex_expression":{'c':float(300000000*7)/(float(11)**2), 'm':7, 's':11,'M':1997}}]*Number_Of_Missions
-    param_list = [{"rel_latex":"E = \\sqrt{(m_{min} + \\mu_b)} * c^2 + mhg","answer_latex":"(E-mhg) / c^2 = ( m_{min} + \\mu_b )^0.5","constants_latex_expression":dict(m=3)}, ] * Number_Of_Missions
-                #   {"rel_latex":"E / c^2 = ( - m_{a2} + \\mu_b )^0.5","answer_latex":"E = (-m_{a2} + \\mu_b)^0.5 c^2","constants_latex_expression":{'c': float(300000000)}}]
-    # param_list = [{"rel_latex":"E = m","answer_latex":"0.1E - m/10 = 0","constants_latex_expression":dict(m=3)}, ] * Number_Of_Missions
-    param_list = [{"rel_latex":r"m/b *(e^{b/m*x}-1)=V_0 t","answer_latex":r"e^{b /m *x} = 1 + {b V_0}/m*t",
-                   "constants_latex_expression":{}}, ] * Number_Of_Missions
-
+    # # param_list = [{"rel_latex":"E>M c^2","answer_latex":"M<E/(c)^2","constants_latex_expression":{'c':float(300000000*7)/(float(11)**2), 'm':7, 's':11,'M':1997}}]*Number_Of_Missions
+    # param_list = [{"rel_latex":"E = \\sqrt{(m_{min} + \\mu_b)} * c^2 + mhg","answer_latex":"(E-mhg) / c^2 = ( m_{min} + \\mu_b )^0.5","constants_latex_expression":dict(m=3)}, ] * Number_Of_Missions
+    #             #   {"rel_latex":"E / c^2 = ( - m_{a2} + \\mu_b )^0.5","answer_latex":"E = (-m_{a2} + \\mu_b)^0.5 c^2","constants_latex_expression":{'c': float(300000000)}}]
+    # # param_list = [{"rel_latex":"E = m","answer_latex":"0.1E - m/10 = 0","constants_latex_expression":dict(m=3)}, ] * Number_Of_Missions
+    
+    
+    param_list = [{"rel_latex":r"m/b *(e^{b/m*x}-1)=V_0 s","answer_latex":r"e^{b /m *x} = 1 + {b V_0}/m*t",
+                   "constants_latex_expression":{"e": np.e, "t": "1*s", "s": "s"}}, ] * Number_Of_Missions
+                                        # constant number  # univ const    # unit
+                                        
+                                        
+                                        
     print(whether_rel_latex_correct_with_only_one_dict_parameter(param_list[0]))
     
     N_Thread = 8

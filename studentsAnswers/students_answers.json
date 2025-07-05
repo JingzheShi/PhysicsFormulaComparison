@@ -1,12 +1,7 @@
 {
-    "studentID1_sueh": {
-        "problemID1_sieur":[
-            "(E-mhg) / c^2 = ( m_{min} + \\mu_b )"
-        ]
-    },
-    "s11": {
-        "problemID1_sieur":[
-            "1 + 1 = 2"
+    "s1": {
+        "problemID2":[
+            "m_a = - m_b + \\kg / (300000000m/s)^2"
         ]
     }
 }

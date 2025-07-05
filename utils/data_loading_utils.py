@@ -97,7 +97,8 @@ def build_Student_AnswersAndScores_for_MultiProblem_from_dict(problemFormulasLis
         problemID = problemFormulas.problemID
         for studentID, studentAnswers_for_multiProblem in studentsAnswers_dict.items():
             if problemID not in studentAnswers_for_multiProblem:
-                assert False, f"Problem ID {problemID} not found in student answers and scores for student {studentID}"
+                continue
+            assert problemID in studentAnswers_for_multiProblem, f"Problem ID {problemID} not found in student answers and scores for student {studentID}"
             student_Answers_latex_list = studentAnswers_for_multiProblem[problemID]
             if str(studentID) not in built_dct:
                 built_dct[str(studentID)] = dict()
