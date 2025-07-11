@@ -46,7 +46,7 @@
                     "points": 20,
                     "answer_latex": "g = 0.001 * (m_a + m_b) c^2",
                     "units": {
-                        "g": "g","m":"m","s": "s","\\kg": "1000*g"
+                        "\\kg": "1000*g"
                     },
                     "universe_constants": {"c": "300000000*m/s"},
                     "constants": {}

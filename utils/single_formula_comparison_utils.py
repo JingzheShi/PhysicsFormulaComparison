@@ -337,7 +337,8 @@ def same_rel_metric(div,org_rel_diff,left_minus_right, **kwargs):
         epsilon_for_equal_for_randomlySample = kwargs["epsilon_for_equal_for_randomlySample"]
     else:
         epsilon_for_equal_for_randomlySample = RELA_EPSILON_FOR_ALMOST_CONSTANT_EVAL
-
+    # if if_print:
+    # print(epsilon_for_equal_for_randomlySample, 'aw;oefiaweoi')
     def my_measure(expr):
         POW = Symbol('POW')
         # Discourage powers by giving POW a weight of 10
@@ -477,8 +478,6 @@ def comparing_rel(rel1, rel2, strict_comparing_inequalities = False,  **kwargs):
     if not len(rel2.free_symbols - set(units_expression)) >= 1:
         return False, "The answer is composed of constants."
 
-    if (rel1.free_symbols-set(units_expression)) != (rel2.free_symbols-set(units_expression)):
-        return False, "Different_Free_Variables"
     
     _, unit_var_lst_1 = get_unit_and_free_variable(rel1,units_expression=units_expression)
     dct_1={unit_var: units_expression_weight[unit_var] for unit_var in unit_var_lst_1}
@@ -510,6 +509,10 @@ def comparing_rel(rel1, rel2, strict_comparing_inequalities = False,  **kwargs):
         rel1 = rel1.subs(dct_1_numeric)
     if len(dct_2_numeric) > 0:
         rel2 = rel2.subs(dct_2_numeric)
+        
+    if (rel1.free_symbols-set(units_expression)) != (rel2.free_symbols-set(units_expression)):
+        return False, f"Different_Free_Variables: {rel1.free_symbols-set(units_expression)} vs {rel2.free_symbols-set(units_expression)}"
+    
         
     
     # # plug in dct_1_str and dct_2_str to rel1 and rel2.
@@ -633,20 +636,27 @@ if (__name__=="__main__"):
     param_list = [{"rel_latex":r"m/b *(e^{b/m*x}-1)=V_0 s","answer_latex":r"e^{b /m *x} = 1 + {b V_0}/m*t",
                    "constants_latex_expression":{"e": np.e, "t": "1*s", "s": "s"}}, ] * Number_Of_Missions
                                         # constant number  # univ const    # unit
+    # param_list = [{"rel_latex":"m_a = - m_b + \\kg / (3000000000m/s)^2","answer_latex":"m_a = - m_b + \\kg / (300000000m/s)^2",
+    #                "constants_latex_expression":{"e": np.e, "t": "1*s", "s": "s"}}, ] * Number_Of_Missions
                                         
-                                        
-                                        
-    print(whether_rel_latex_correct_with_only_one_dict_parameter(param_list[0]))
-    
-    N_Thread = 8
     start = time.time()
-    with Pool(N_Thread) as p:
-        r = list(tqdm(p.map(whether_rel_latex_correct_with_only_one_dict_parameter, param_list), total=len(param_list), desc='testing'))
+    for param in tqdm(param_list, desc='testing'):
+        # print(param)
+        # print(whether_rel_latex_correct(**param))
+        print(whether_rel_latex_correct_with_only_one_dict_parameter(param))
+    # print(whether_rel_latex_correct_with_only_one_dict_parameter(param_list))
     end = time.time()
-    print("Time for N_Thread = {}: ".format(N_Thread), end-start)
-    # save r into json file.
-    import json
-    # use 4 as tab indent.
-    with open("result.json", "w") as f:
-        json.dump(r, f, indent=4)
-    print(r)
+    print("Time for one mission: ", end-start)
+    
+    # N_Thread = 8
+    # start = time.time()
+    # with Pool(N_Thread) as p:
+    #     r = list(tqdm(p.map(whether_rel_latex_correct_with_only_one_dict_parameter, param_list), total=len(param_list), desc='testing'))
+    # end = time.time()
+    # print("Time for N_Thread = {}: ".format(N_Thread), end-start)
+    # # save r into json file.
+    # import json
+    # # use 4 as tab indent.
+    # with open("result.json", "w") as f:
+    #     json.dump(r, f, indent=4)
+    # print(r)
