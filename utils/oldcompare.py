@@ -1,4 +1,5 @@
-import re
+
+
 from sympy import *
 from sympy.parsing.latex import parse_latex 
 from sympy import latex
@@ -495,47 +496,41 @@ def comparing_rel(rel1, rel2, strict_comparing_inequalities = False,  **kwargs):
         rel1 = parse_latex(rel1_latex)
         rel2 = parse_latex(rel2_latex)
         print(rel1, rel2, 'after direct string replace')
-    if "num_constant_change_iter" in kwargs:
-        num_constant_change_iter = kwargs["num_constant_change_iter"]
-    else:
-        num_constant_change_iter = 1
 
-    for _ in range(num_constant_change_iter):
+    
+    _, unit_var_lst_1 = get_unit_and_free_variable(rel1,units_expression=units_expression)
+    dct_1={unit_var: units_expression_weight[unit_var] for unit_var in unit_var_lst_1}
+    
+    _,unit_var_lst_2 = get_unit_and_free_variable(rel2,units_expression=units_expression)
+    dct_2 = {unit_var: units_expression_weight[unit_var] for unit_var in unit_var_lst_2}
+    
+    dct_1_numeric = {k: v for k, v in dct_1.items() if not is_numeric(v)}
+    dct_2_numeric = {k: v for k, v in dct_2.items() if not is_numeric(v)}
+    dct_1_str = {k: v for k, v in dct_1.items() if is_numeric(v)}
+    dct_2_str = {k: v for k, v in dct_2.items() if is_numeric(v)}
+    
+    if len(dct_1_str) > 0 or len(dct_2_str) > 0:
+        if len(dct_1_str) > 0:
+            dct_1_sympy = {k: sp.sympify(v) for k, v in dct_1_str.items()}
+        if len(dct_2_str) > 0:
+            dct_2_sympy = {k: sp.sympify(v) for k, v in dct_2_str.items()}
+        rel1 = rel1.subs(dct_1_sympy)
+        rel2 = rel2.subs(dct_2_sympy)
+        # check again for unit expressions. For example, if we substitde "kg=1000*g", while "g=114514", we have to substitute "g" again.
         _, unit_var_lst_1 = get_unit_and_free_variable(rel1,units_expression=units_expression)
-        dct_1={unit_var: units_expression_weight[unit_var] for unit_var in unit_var_lst_1}
-        
-        _,unit_var_lst_2 = get_unit_and_free_variable(rel2,units_expression=units_expression)
+        _, unit_var_lst_2 = get_unit_and_free_variable(rel2,units_expression=units_expression)
+        dct_1 = {unit_var: units_expression_weight[unit_var] for unit_var in unit_var_lst_1}
         dct_2 = {unit_var: units_expression_weight[unit_var] for unit_var in unit_var_lst_2}
-        
-        # print(rel1, rel2, dct_1, dct_2, 'bqwpeiufhqwfiouawef')
-        
         dct_1_numeric = {k: v for k, v in dct_1.items() if not is_numeric(v)}
         dct_2_numeric = {k: v for k, v in dct_2.items() if not is_numeric(v)}
-        dct_1_str = {k: v for k, v in dct_1.items() if is_numeric(v)}
-        dct_2_str = {k: v for k, v in dct_2.items() if is_numeric(v)}
-        
-        if len(dct_1_str) > 0 or len(dct_2_str) > 0:
-            if len(dct_1_str) > 0:
-                dct_1_sympy = {k: sp.sympify(v) for k, v in dct_1_str.items()}
-            if len(dct_2_str) > 0:
-                dct_2_sympy = {k: sp.sympify(v) for k, v in dct_2_str.items()}
-            rel1 = rel1.subs(dct_1_sympy)
-            rel2 = rel2.subs(dct_2_sympy)
-            # check again for unit expressions. For example, if we substitde "kg=1000*g", while "g=114514", we have to substitute "g" again.
-            _, unit_var_lst_1 = get_unit_and_free_variable(rel1,units_expression=units_expression)
-            _, unit_var_lst_2 = get_unit_and_free_variable(rel2,units_expression=units_expression)
-            dct_1 = {unit_var: units_expression_weight[unit_var] for unit_var in unit_var_lst_1}
-            dct_2 = {unit_var: units_expression_weight[unit_var] for unit_var in unit_var_lst_2}
-            dct_1_numeric = {k: v for k, v in dct_1.items() if not is_numeric(v)}
-            dct_2_numeric = {k: v for k, v in dct_2.items() if not is_numeric(v)}
 
-        if len(dct_1_numeric) > 0:
-            rel1 = rel1.subs(dct_1_numeric)
-        if len(dct_2_numeric) > 0:
-            rel2 = rel2.subs(dct_2_numeric)
+    if len(dct_1_numeric) > 0:
+        rel1 = rel1.subs(dct_1_numeric)
+    if len(dct_2_numeric) > 0:
+        rel2 = rel2.subs(dct_2_numeric)
         
     if (rel1.free_symbols) != (rel2.free_symbols):
-        return False, f"Different_Free_Variables: {rel1.free_symbols} vs {rel2.free_symbols}; {rel1}, {rel2}. ====={units_expression}"
+        return False, f"Different_Free_Variables: {rel1.free_symbols} vs {rel2.free_symbols}; {rel1}, {rel2}"
     
         
     
@@ -624,132 +619,9 @@ def whether_rel_latex_correct(rel_latex,answer_latex,
                                **kwargs):
     rel = parse_latex(rel_latex)
     answer = parse_latex(answer_latex)
-    constants_expression = dict()
-    for x, val in constants_latex_expression.items():
-        new_key = parse_latex(x)
-        if isinstance(val, str) or isinstance(val, int) or isinstance(val, float):
-            new_val = parse_latex(val)
-        else:
-            # print(x,val,'aweofijapwo;eif')
-            new_val = val
-        constants_expression[new_key] = new_val
-    # print(constants_expression,'aweofiajweoifajwe')
-    # constants_expression = {parse_latex(x):constants_latex_expression[x] for x in constants_latex_expression}
+    constants_expression = {parse_latex(x):constants_latex_expression[x] for x in constants_latex_expression}
     return comparing_rel(rel,answer,strict_comparing_inequalities=strict_comparing_inequalities, epsilon_for_equal=epsilon_for_equal,tolerable_diff_fraction = tolerable_diff_fraction,tolerable_diff_max = tolerable_diff_max,constants_expression = constants_expression,
                          **kwargs)
-
-import re
-
-def format_units_latex(unit_expression):
-    # """
-    # Formats a unit expression by prepending '\' to multi-character units.
-    
-    # Args:
-    #     unit_expression (str): Input unit string (e.g., "km*kg/s^2").
-    
-    # Returns:
-    #     str: Formatted LaTeX-like units (e.g., "\km*\kg/\s^2").
-    # """
-    # Split into parts (units and operators)
-    parts = re.split(r'([*/^])', unit_expression)
-    
-    processed_parts = []
-    for part in parts:
-        if part in {'*', '/', '^'}:  # Keep operators unchanged
-            processed_parts.append(part)
-        else:
-            # Split into sub-units and exponents (e.g., "s^2" -> ["s", "^2"])
-            sub_parts = re.split(r'(\^[0-9]+)', part)
-            for sub in sub_parts:
-                if sub.startswith('^'):  # Exponents (e.g., "^2")
-                    processed_parts.append(sub)
-                elif sub:  # Actual unit (e.g., "km", "s")
-                    processed_parts.append(f'\\{sub}' if len(sub) > 1 else sub)
-    
-    return ''.join(processed_parts)
-def whether_rel_latex_correct_with_units(rel_latex,answer_latex,
-                                         constants_latex_expression=None,
-                                         strict_comparing_inequalities=False,
-                                         epsilon_for_equal=1e-2,
-                                         tolerable_diff_fraction = TOLERABLE_DIFF_FRACTION,
-                                         tolerable_diff_max = TOLERABLE_DIFF_MAX,
-                                         unit_pattern = r"\\units{(.*?)}",
-                                         whole_unit_pattern = r"(\\units{.*?})",
-                                         units_conversion_dict = {
-                                             "\\km": "1000*m",
-                                             "\\ms": "0.001*s",
-                                             "\\kg": "1000*g",
-                                         },
-                                         unit_notation = [r"\U_{relstr}", r"\U_{ansstr}"],
-                                         **kwargs):
-    # get unit pattern in rel_latex.
-    p = re.compile(unit_pattern)
-    units_in_rel = p.findall(rel_latex)
-    units_in_answer = p.findall(answer_latex)
-    if len(units_in_rel) == len(units_in_answer) and len(units_in_rel) == 0:
-        return whether_rel_latex_correct(rel_latex, answer_latex,
-                                         constants_latex_expression=constants_latex_expression,
-                                         strict_comparing_inequalities=strict_comparing_inequalities,
-                                         epsilon_for_equal=epsilon_for_equal,
-                                         tolerable_diff_fraction=tolerable_diff_fraction,
-                                         tolerable_diff_max=tolerable_diff_max,
-                                         **kwargs)
-    elif len(units_in_rel) == len(units_in_answer) and len(units_in_rel) == 1:
-        units_in_rel = units_in_rel[0]
-        units_in_answer = units_in_answer[0]
-        # replace the \\units{(.*?)} in rel_latex as r"\unitsInRelLatex", and in answer_latex as r"\unitsInAnswerLatex"
-        # units_in_rel is like 'm/s^2', but I want rel_latex_matched to be like "\units{m/s^2}", to replace what's in the original str.
-        p_whole = re.compile(whole_unit_pattern)
-        rel_latex_matched = p_whole.findall(rel_latex)[0]
-        rel_latex = rel_latex.replace(rel_latex_matched, unit_notation[0])
-        answer_latex_matched = p_whole.findall(answer_latex)[0]
-        answer_latex = answer_latex.replace(answer_latex_matched, unit_notation[1])
-        constants_latex_expression = constants_latex_expression or dict()
-        # units_in_rel is like: "km/s^2"
-        # convert it into an expression of sympy, e.g. "1000*m/s^2".
-        units_in_rel = format_units_latex(units_in_rel)
-        units_in_answer = format_units_latex(units_in_answer)
-        units_in_rel_sp = parse_latex(units_in_rel)
-        units_in_answer_sp = parse_latex(units_in_answer)
-        # check if keys in units_conversion_dict are in units_in_rel_sp and units_in_answer_sp.
-        for key in units_conversion_dict:
-            if key in units_in_rel_sp.free_symbols:
-                units_in_rel_sp = units_in_rel_sp.subs(key, parse_latex(units_conversion_dict[key]))
-            if key in units_in_answer_sp.free_symbols:
-                units_in_answer_sp = units_in_answer_sp.subs(key, parse_latex(units_conversion_dict[key]))
-        # now units_in_rel_sp and units_in_answer_sp are sympy expressions.
-        constants_latex_expression[unit_notation[0]] = units_in_rel_sp
-        constants_latex_expression[unit_notation[1]] = units_in_answer_sp
-        for k,v in units_conversion_dict.items():
-            if k not in constants_latex_expression:
-                constants_latex_expression[k] = v
-        # now we can call whether_rel_latex_correct.
-        # print(rel_latex, answer_latex, constants_latex_expression, 'awelifaweliwe')
-        return whether_rel_latex_correct(rel_latex, answer_latex,
-                                            constants_latex_expression=constants_latex_expression,
-                                            strict_comparing_inequalities=strict_comparing_inequalities,
-                                            epsilon_for_equal=epsilon_for_equal,
-                                            tolerable_diff_fraction=tolerable_diff_fraction,
-                                            tolerable_diff_max=tolerable_diff_max,
-                                            num_constant_change_iter = 2,
-                                            **kwargs)
-    else:
-        assert False, "The number of units in rel_latex and answer_latex should be the same, and should be 0 or 1."
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
 def whether_rel_latex_correct_with_only_one_dict_parameter(dct):
     '''
     The keys in dct should be:
@@ -764,19 +636,7 @@ def whether_rel_latex_correct_with_only_one_dict_parameter(dct):
     assert "rel_latex" in dct and "answer_latex" in dct, "rel_latex and answer_latex must be in dct"
     return whether_rel_latex_correct(**dct)
 
-def whether_rel_latex_correct_with_units_with_only_one_dict_parameter(dct):
-    '''
-    The keys in dct should be:
-        rel_latex
-        answer_latex
-        constants_latex_expression
-        strict_comparing_inequalities
-        epsilon_for_equal
-        tolerable_diff_fraction
-        tolerable_diff_max
-    '''
-    assert "rel_latex" in dct and "answer_latex" in dct, "rel_latex and answer_latex must be in dct"
-    return whether_rel_latex_correct_with_units(**dct)
+
 
 
 # for _ in tqdm(range(Number_Of_Missions)):
@@ -796,24 +656,19 @@ if (__name__=="__main__"):
     
     param_list = [
         {
-            "rel_latex": "m = 10 \\units{kg/s^2}",
-            "answer_latex": "m = 10000 \\units{g/s^2}",
-            # "constants_latex_expression": {"\\kg": "1000*g"},
+            "rel_latex": "m = 10 \\kg",
+            "answer_latex": "m = 10000 g",
+            "constants_latex_expression": {"\\kg": "1000*g"}
         },
-    ]
+    ]               
     
     
-    # param_list = [{"rel_latex":"P_{1}=\\frac{U^{2}} {R_{0}} \\sin( w t )^{2} \\units{m/s^2}","answer_latex":"P_{1}(t)=\\frac{U^{2}} {R_{0}} \\sin^{2}( w t ) \\units{0.001*km/s^2}",
-    #                "constants_latex_expression":{"\\P_{1}(t)": "P_{1}"}, "direct_string_replace": {"P_{1}{\\left(t \\right)}": "P_{1}"}} ] * Number_Of_Missions
-                                        # constant number  # univ const    # unit
-    # param_list = [{"rel_latex":"m_a = - m_b + \\kg / (3000000000m/s)^2","answer_latex":"m_a = - m_b + \\kg / (300000000m/s)^2",
-    #                "constants_latex_expression":{"e": np.e, "t": "1*s", "s": "s"}}, ] * Number_Of_Missions
-                                        
+    
     start = time.time()
     for param in tqdm(param_list, desc='testing'):
         # print(param)
         # print(whether_rel_latex_correct(**param))
-        print(whether_rel_latex_correct_with_units_with_only_one_dict_parameter(param))
+        print(whether_rel_latex_correct_with_only_one_dict_parameter(param))
     # print(whether_rel_latex_correct_with_only_one_dict_parameter(param_list))
     end = time.time()
     print("Time for one mission: ", end-start)
