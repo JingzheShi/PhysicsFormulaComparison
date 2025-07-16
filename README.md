@@ -1,5 +1,5 @@
 # CPHOSS_Formula_Comparison
-The formula comparison part of Centralized Physics Olympiad Scoring System
+The formula comparison part of Centralized Physics Olympiad Scoring System; with the newly added units comparison formula engine.
 
 ## How to Use
 
