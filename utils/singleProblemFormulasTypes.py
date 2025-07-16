@@ -74,11 +74,16 @@ class Node():
                 parse_dct[inherit_key] = kwargs[inherit_key]
         self.prefix_str = prefix_str
         self.children_lst = []
-        assert "points" in dct, "Must assign points to part, solution or formula"
+        assert "points" in dct, "Must assign points to part, solution, formula or floor"
 
         self.max_points = dct["points"]
         
-        assert ("solution_1" not in dct) or ("part_1" not in dct), "Cannot have both part_1 and solution_1"
+        counter = 0
+        counter += 1 if "solution_1" in dct else 0
+        counter += 1 if "part_1" in dct else 0
+        counter += 1 if "floor_1" in dct else 0
+        assert counter <= 1, "Cannot have more than one of solution_1, part_1 or floor_1 in the same node"
+        
         
         if "solution_1" in dct:
             assert ("formula_1" not in dct), "If you use solution, then all formulas should be inside solution"
@@ -100,12 +105,21 @@ class Node():
                 
             #assert sum([child.max_points for child in self.children_lst]) == self.max_points, "Points in parts should be equal to the points in its father"
 
+        if "floor_1" in dct:
+            self.ChildrenNodeType = "floor"
+            s=1
+            while ("floor_{}".format(s) in dct):
+                self.children_lst.append(Node(dct["floor_{}".format(s)],self.prefix_str+'*{}'.format(s),"floor",**parse_dct))
+                s=s+1
+
         if "formula_1" in dct:
             self.ChildrenNodeType = "formula"
             s=1
             while ("formula_{}".format(s) in dct):
                 self.children_lst.append(Formula(dct["formula_{}".format(s)],self.prefix_str+'+{}'.format(s),"formula",**parse_dct))
                 s+=1
+                
+        
 
             #assert sum([child.max_points for child in self.children_lst]) == self.max_points, "Points in formulas should be equal to the points in its father"
     def evaluate_points(self,Student_Score_Dct):
@@ -121,6 +135,9 @@ class Node():
             return part_score if part_score <= self.max_points else self.max_points
         elif self.ChildrenNodeType == "solution":
             part_score = max([child.evaluate_points(Student_Score_Dct) for child in self.children_lst])
+            return part_score if part_score <= self.max_points else self.max_points
+        elif self.ChildrenNodeType == "floor":
+            part_score = min([child.evaluate_points(Student_Score_Dct) for child in self.children_lst])
             return part_score if part_score <= self.max_points else self.max_points
         
         

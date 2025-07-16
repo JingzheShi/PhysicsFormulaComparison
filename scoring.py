@@ -38,9 +38,9 @@ if __name__ == '__main__':
     multiStudent_compare_multiProblem(problemsList, studentsAnswersAndScores, args.N_process)
 
     for studentID, student_answersAndScores_for_problems in studentsAnswersAndScores.items():
-        # print("studentID: ", studentID)
+        print("studentID: ", studentID)
         for problemID, this_student_answerAndScore_for_singleProblem in student_answersAndScores_for_problems.items():
-            # print("problemID: ", problemID)
+            print("problemID: ", problemID)
             # print("points: ", this_student_answerAndScore_for_singleProblem.points)
             # print("studentScoreDct: ", this_student_answerAndScore_for_singleProblem.studentScoreDct)
             # print("points: ", this_student_answerAndScore_for_singleProblem.points)
