@@ -69,8 +69,17 @@
         "floor_2": {
             "points": 30,
             "formula_1": {
-                "points": 30,
+                "points": 20,
                 "answer_latex": "E_f = (m_1 + m_2) c^2 + mgh"
+            },
+            "formula_2": {
+                "points": 10,
+                "answer_latex": "a_w = 0.01 \\unit{km/s^2}",
+                "units_conversion_dict": {
+                    "\\km": "1000*m",
+                    "\\ms": "0.001*s",
+                    "\\kg": "1000*g"
+                }
             }
         }
     }

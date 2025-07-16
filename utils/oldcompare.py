@@ -6,7 +6,7 @@ from sympy import latex
 units_latex={r'\kg':3,r'\s':7,r'\m':11,r'\A':13,r'\K':17,r'\g':0.003}
 UNITS_LATEX = units_latex
 UNITS_EXPRESSION = {parse_latex(x):units_latex[x] for x in units_latex}
-EPSILON_FOR_EQUAL = 1e-2
+EPSILON_FOR_EQUAL = 1e-5
 RELA_EPSILON_FOR_ALMOST_CONSTANT_EVAL = 1e-5
 TOLERABLE_DIFF_MAX = 5
 TOLERABLE_DIFF_FRACTION = 0.6
@@ -613,7 +613,7 @@ def comparing_rel(rel1, rel2, strict_comparing_inequalities = False,  **kwargs):
 def whether_rel_latex_correct(rel_latex,answer_latex,
                                constants_latex_expression=None,
                                strict_comparing_inequalities=False,
-                               epsilon_for_equal=1e-2,
+                               epsilon_for_equal=1e-5,
                                tolerable_diff_fraction = TOLERABLE_DIFF_FRACTION,
                                tolerable_diff_max = TOLERABLE_DIFF_MAX,
                                **kwargs):

@@ -5,7 +5,7 @@ from sympy import latex
 units_latex={r'\kg':3,r'\s':7,r'\m':11,r'\A':13,r'\K':17,r'\g':0.003}
 UNITS_LATEX = units_latex
 UNITS_EXPRESSION = {parse_latex(x):units_latex[x] for x in units_latex}
-EPSILON_FOR_EQUAL = 1e-2
+EPSILON_FOR_EQUAL = 1e-5
 RELA_EPSILON_FOR_ALMOST_CONSTANT_EVAL = 1e-5
 TOLERABLE_DIFF_MAX = 5
 TOLERABLE_DIFF_FRACTION = 0.6
@@ -336,9 +336,11 @@ def same_rel_metric(div,org_rel_diff,left_minus_right, **kwargs):
     else:
         units_expression_weight = UNITS_EXPRESSION
     if "epsilon_for_equal_for_randomlySample" in kwargs:
+        assert False, 'this is deprecated and should be parsed in with `epsilon_for_equal`'
         epsilon_for_equal_for_randomlySample = kwargs["epsilon_for_equal_for_randomlySample"]
     else:
         epsilon_for_equal_for_randomlySample = RELA_EPSILON_FOR_ALMOST_CONSTANT_EVAL
+    epsilon_for_equal_for_randomlySample = epsilon_for_equal
     # if if_print:
     # print(epsilon_for_equal_for_randomlySample, 'aw;oefiaweoi')
     def my_measure(expr):
@@ -618,7 +620,7 @@ def comparing_rel(rel1, rel2, strict_comparing_inequalities = False,  **kwargs):
 def whether_rel_latex_correct(rel_latex,answer_latex,
                                constants_latex_expression=None,
                                strict_comparing_inequalities=False,
-                               epsilon_for_equal=1e-2,
+                               epsilon_for_equal=1e-5,
                                tolerable_diff_fraction = TOLERABLE_DIFF_FRACTION,
                                tolerable_diff_max = TOLERABLE_DIFF_MAX,
                                **kwargs):
@@ -670,17 +672,17 @@ def format_units_latex(unit_expression):
 def whether_rel_latex_correct_with_units(rel_latex,answer_latex,
                                          constants_latex_expression=None,
                                          strict_comparing_inequalities=False,
-                                         epsilon_for_equal=1e-2,
+                                         epsilon_for_equal=1e-5,
                                          tolerable_diff_fraction = TOLERABLE_DIFF_FRACTION,
                                          tolerable_diff_max = TOLERABLE_DIFF_MAX,
-                                         unit_pattern = r"\\units{(.*?)}",
-                                         whole_unit_pattern = r"(\\units{.*?})",
+                                         unit_pattern = r"\\unit{(.*?)}",
+                                         whole_unit_pattern = r"(\\unit{.*?})",
                                          units_conversion_dict = {
                                              "\\km": "1000*m",
                                              "\\ms": "0.001*s",
                                              "\\kg": "1000*g",
                                          },
-                                         unit_notation = [r"\U_{relstr}", r"\U_{ansstr}"],
+                                         unit_notation = [r"\U_{relstrunitnotation}", r"\U_{ansstrunitnotation}"],
                                          **kwargs):
     # get unit pattern in rel_latex.
     p = re.compile(unit_pattern)
@@ -697,7 +699,7 @@ def whether_rel_latex_correct_with_units(rel_latex,answer_latex,
     elif len(units_in_rel) == len(units_in_answer) and len(units_in_rel) == 1:
         units_in_rel = units_in_rel[0]
         units_in_answer = units_in_answer[0]
-        # replace the \\units{(.*?)} in rel_latex as r"\unitsInRelLatex", and in answer_latex as r"\unitsInAnswerLatex"
+        # replace the \\unit{(.*?)} in rel_latex as r"\unitsInRelLatex", and in answer_latex as r"\unitsInAnswerLatex"
         # units_in_rel is like 'm/s^2', but I want rel_latex_matched to be like "\units{m/s^2}", to replace what's in the original str.
         p_whole = re.compile(whole_unit_pattern)
         rel_latex_matched = p_whole.findall(rel_latex)[0]
@@ -734,7 +736,7 @@ def whether_rel_latex_correct_with_units(rel_latex,answer_latex,
                                             num_constant_change_iter = 2,
                                             **kwargs)
     else:
-        assert False, "The number of units in rel_latex and answer_latex should be the same, and should be 0 or 1."
+        return False, "The number of units in rel_latex and answer_latex should be the same, and should be 0 or 1."
     
     
     
@@ -796,14 +798,14 @@ if (__name__=="__main__"):
     
     param_list = [
         {
-            "rel_latex": "m = 10 \\units{kg/s^2}",
-            "answer_latex": "m = 10000 \\units{g/s^2}",
+            "rel_latex": "m = 10 \\unit{kg/s^2}",
+            "answer_latex": "m = 10000 \\unit{g/s^2}",
             # "constants_latex_expression": {"\\kg": "1000*g"},
         },
     ]
     
     
-    # param_list = [{"rel_latex":"P_{1}=\\frac{U^{2}} {R_{0}} \\sin( w t )^{2} \\units{m/s^2}","answer_latex":"P_{1}(t)=\\frac{U^{2}} {R_{0}} \\sin^{2}( w t ) \\units{0.001*km/s^2}",
+    # param_list = [{"rel_latex":"P_{1}=\\frac{U^{2}} {R_{0}} \\sin( w t )^{2} \\unit{m/s^2}","answer_latex":"P_{1}(t)=\\frac{U^{2}} {R_{0}} \\sin^{2}( w t ) \\unit{0.001*km/s^2}",
     #                "constants_latex_expression":{"\\P_{1}(t)": "P_{1}"}, "direct_string_replace": {"P_{1}{\\left(t \\right)}": "P_{1}"}} ] * Number_Of_Missions
                                         # constant number  # univ const    # unit
     # param_list = [{"rel_latex":"m_a = - m_b + \\kg / (3000000000m/s)^2","answer_latex":"m_a = - m_b + \\kg / (300000000m/s)^2",

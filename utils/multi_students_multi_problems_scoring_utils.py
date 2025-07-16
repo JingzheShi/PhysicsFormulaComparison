@@ -1,6 +1,6 @@
 from .singleProblemFormulasTypes import ProblemFormulas,Formula
 from .singleStudentAnswerTypes import Student_AnswersAndScores_for_SingleProblem
-from .single_formula_comparison_utils import whether_rel_latex_correct_with_only_one_dict_parameter
+from .single_formula_comparison_utils import whether_rel_latex_correct_with_units_with_only_one_dict_parameter
 import multiprocessing
 def compare_problemFormula_with_studentAnswer(dct):
     # The keys in dct should be:
@@ -13,10 +13,14 @@ def compare_problemFormula_with_studentAnswer(dct):
                                     **dct['problemFormula'].utils_dct['units']},
         strict_comparing_inequalities = dct['problemFormula'].utils_dct['strict_comparing_inequalities'],
         epsilon_for_equal = dct['problemFormula'].utils_dct['epsilon_for_equal'],
-        tolerable_diff_fraction = dct['problemFormula'].utils_dct['tolerable_diff_fraction'],
-        tolerable_diff_max = dct['problemFormula'].utils_dct['tolerable_diff_max']
+        # tolerable_diff_fraction = dct['problemFormula'].utils_dct['tolerable_diff_fraction'], deprecated.
+        # tolerable_diff_max = dct['problemFormula'].utils_dct['tolerable_diff_max'], deprecated.
+        unit_pattern = dct['problemFormula'].utils_dct['unit_pattern'],
+        whole_unit_pattern = dct['problemFormula'].utils_dct['whole_unit_pattern'],
+        units_conversion_dict = dct['problemFormula'].utils_dct['units_conversion_dict']
     )
-    whether_correct, description = whether_rel_latex_correct_with_only_one_dict_parameter(parsing_dct)
+    # print(f"units_conversion_dict: {parsing_dct['units_conversion_dict']}")
+    whether_correct, description = whether_rel_latex_correct_with_units_with_only_one_dict_parameter(parsing_dct)
     return dict(
         studentID = dct['studentID'],
         problemID = dct['problemID'],
