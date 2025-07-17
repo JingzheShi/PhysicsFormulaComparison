@@ -8,11 +8,13 @@
     "student_2":{
         "problem_X": [
             "E_i = (m_1 + m_2) c^2",
-            "E_f = (m_1 + m_2) c^2 + mgh"
+            "U(r) = -\\frac{h^2 (b^2 + 1)}{2 r^2}",
+            "a_w = 10 \\unit{m/s^2}"
         ]
     },
     "student_3":{
         "problem_X": [
+            "E_i = (m_1 + m_2) c^2",
             "E_f = (m_1 + m_2) c^2 + mgh"
         ]
     }

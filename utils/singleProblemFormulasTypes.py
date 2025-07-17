@@ -1,19 +1,16 @@
-inherit_lst = ["to_be_calculated","constants","universe_constants","units","strict_comparing_inequalities","epsilon_for_equal","tolerable_diff_max","tolerable_diff_fraction"]
+inherit_lst = ["to_be_calculated","constants","universe_constants","units","strict_comparing_inequalities","epsilon_for_equal","unit_pattern","whole_unit_pattern","units_conversion_dict"]
 
-UNIVERSE_CONSTANTS_WEIGHTS = {r'c':float(300000000*1997/119),}
-UNIT_WEIGHTS={r'm':float(1.997),r'\kg':1.1451,r'\g':float(1.1451/1000),r'\cm':0.01997,r's':119,'J':float(1.1451*1.997**2/119**2)}
-EPSILON_FOR_EQUAL = 1e-2
-TOLERABLE_DIFF_MAX = 5
-TOLERABLE_DIFF_FRACTION = 0.6
-PRIMES = [461,2089,641,787,4019, 809, 1871, 2969, 3089, 2591, 2129, 2381, 619, 1667, 2657, 2549, 3391, 1289, 3271, 1021, 1223, 3167, 3769, 3433, 2357, 3571, 1451, 4007, 3433, 2927, 3691, 3527, 3329, 2029, 3319, 3109, 2837, 3931, 3217, 2789, 3821, 3791, 2621, 3797, 2437, 3769]
+from utils.default_hyperparams import EPSILON_FOR_EQUAL, UNIT_PATTERN, WHOLE_UNIT_PATTERN, UNITS_CONVERSION_DICT
 
-default_dct = {"to_be_calculated":dict(),"constants":dict(),"universe_constants":UNIVERSE_CONSTANTS_WEIGHTS,"units":UNIT_WEIGHTS,
-               "strict_comparing_inequalities":False,
-               "epsilon_for_equal":EPSILON_FOR_EQUAL,"tolerable_diff_max":TOLERABLE_DIFF_MAX,"tolerable_diff_fraction":TOLERABLE_DIFF_FRACTION}
+
 
 default_dct = {"to_be_calculated":dict(),"constants":dict(),"universe_constants":dict(),"units":dict(),
                "strict_comparing_inequalities":False,
-               "epsilon_for_equal":EPSILON_FOR_EQUAL,"tolerable_diff_max":TOLERABLE_DIFF_MAX,"tolerable_diff_fraction":TOLERABLE_DIFF_FRACTION}
+               "epsilon_for_equal":EPSILON_FOR_EQUAL,
+               "unit_pattern":UNIT_PATTERN,
+               "whole_unit_pattern":WHOLE_UNIT_PATTERN,
+               "units_conversion_dict":UNITS_CONVERSION_DICT
+               }
 
 class Formula():
     def __init__(self,dct,prefix_str,type,**kwargs):
@@ -51,7 +48,7 @@ class Formula():
             if isinstance(self.utils_dct["constants"], dict):
                 new_constants_dct[item] = self.utils_dct["constants"][item]
             else:
-                new_constants_dct[item] = PRIMES[index]
+                new_constants_dct[item] = item
             
         self.utils_dct["constants"] = new_constants_dct
         # print(self.utils_dct["universe_constants"])

@@ -5,10 +5,14 @@ from sympy import latex
 units_latex={r'\kg':3,r'\s':7,r'\m':11,r'\A':13,r'\K':17,r'\g':0.003}
 UNITS_LATEX = units_latex
 UNITS_EXPRESSION = {parse_latex(x):units_latex[x] for x in units_latex}
-EPSILON_FOR_EQUAL = 1e-2
+EPSILON_FOR_EQUAL = 1e-5
 RELA_EPSILON_FOR_ALMOST_CONSTANT_EVAL = 1e-5
 TOLERABLE_DIFF_MAX = 5
 TOLERABLE_DIFF_FRACTION = 0.6
+
+ONLY_PRINT_WHEN_CALLED_FOR_DEBUG = False
+if __name__ == "__main__":
+    ONLY_PRINT_WHEN_CALLED_FOR_DEBUG = True
 
 
 import sympy as sp
@@ -143,6 +147,23 @@ if 0:
 
 import sympy as sp
 import numpy as np
+from sympy.core.function import AppliedUndef
+
+def replace_all_functions_to_freevars(expr):
+    applied_functions = list(expr.atoms(AppliedUndef))
+    applied_functions_args_dict = dict()
+    for f in applied_functions:
+        if f not in applied_functions_args_dict:
+            applied_functions_args_dict[f] = [str(arg) for arg in f.args]
+            # sort the arguments to ensure consistent naming.
+    applied_functions_args_dict = {f: sorted(args) for f, args in applied_functions_args_dict.items()}
+    
+    repl = {
+        f: sp.Symbol(f"{f.func.__name__}_which_is_a_var_of_"+"_AND_".join(applied_functions_args_dict[f]))
+        for f in applied_functions
+    }
+    expr_replaced = expr.subs(repl)
+    return expr_replaced
 
 def is_almost_equivalent(eq1, eq2, variables=None, tol=1e-6, n_trials=15, sample_range=(-20, 20), if_print=False,
                          max_trials = 20, atleast_trial_when_possible=10, maxmaxtrial=40):
@@ -153,7 +174,12 @@ def is_almost_equivalent(eq1, eq2, variables=None, tol=1e-6, n_trials=15, sample
     if if_print:
         print(f"Comparing using tol {tol} and n_trials {n_trials} for {eq1} and {eq2}")
     if variables is None:
-        variables = list(eq1.free_symbols.union(eq2.free_symbols))
+        eq1 = replace_all_functions_to_freevars(eq1)
+        eq2 = replace_all_functions_to_freevars(eq2)
+        # functions1 = set(eq1.atoms(AppliedUndef))
+        # functions2 = set(eq2.atoms(AppliedUndef))
+        # functions_set = functions1.union(functions2)
+        variables = list(eq1.free_symbols.union(eq2.free_symbols)) # + list(functions_set)
     if not variables:
         return False, f'no free variable when comparing is_almost_equivalent for {eq1} and {eq2}'
     rng = np.random.default_rng()
@@ -213,12 +239,12 @@ def is_almost_equivalent(eq1, eq2, variables=None, tol=1e-6, n_trials=15, sample
             if len(vals1) != len(vals2):
                 ineq_trials += 1
                 if if_print:
-                    print(f"Trial {trial}: {solve_var} | sol1={vals1}, sol2={vals2}, which are NOT considered equivalent")
+                    print(f"Trial {trial}: {solve_var} | sol1={vals1}, sol2={vals2}, which are NOT considered equivalent. Vars equal to: {variables}, subs={subs}")
                 continue_flag = True
             elif len(vals1) == 0:
                 failed_trials += 1
                 if if_print:
-                    print(f"Trial {trial}: {solve_var} | sol1={vals1}, sol2={vals2}, which are all empty, so failed trial")
+                    print(f"Trial {trial}: {solve_var} | sol1={vals1}, sol2={vals2}, which are all empty, so failed trial. Vars equal to: {variables}, subs={subs}")
                 continue_flag = True
             if continue_flag:
                 continue
@@ -248,7 +274,7 @@ def is_almost_equivalent(eq1, eq2, variables=None, tol=1e-6, n_trials=15, sample
                     all_match = False
                     break
             if if_print:
-                print(f"Trial {trial}: {solve_var} | sol1={vals1_sorted}, sol2={vals2_sorted}, all_match={all_match}: relaDiff = {diff_list} (when sol=0, this is Diff)")
+                print(f"Trial {trial}: {solve_var} | sol1={vals1_sorted}, sol2={vals2_sorted}, all_match={all_match}: relaDiff = {diff_list} (when sol=0, this is Diff). Vars equal to: {variables}, subs={subs}")
             if all_match:
                 passed_trials += 1
             else:
@@ -336,9 +362,11 @@ def same_rel_metric(div,org_rel_diff,left_minus_right, **kwargs):
     else:
         units_expression_weight = UNITS_EXPRESSION
     if "epsilon_for_equal_for_randomlySample" in kwargs:
+        assert False, 'this is deprecated and should be parsed in with `epsilon_for_equal`'
         epsilon_for_equal_for_randomlySample = kwargs["epsilon_for_equal_for_randomlySample"]
     else:
         epsilon_for_equal_for_randomlySample = RELA_EPSILON_FOR_ALMOST_CONSTANT_EVAL
+    epsilon_for_equal_for_randomlySample = epsilon_for_equal
     # if if_print:
     # print(epsilon_for_equal_for_randomlySample, 'aw;oefiaweoi')
     def my_measure(expr):
@@ -353,7 +381,7 @@ def same_rel_metric(div,org_rel_diff,left_minus_right, **kwargs):
     # div_count = count_ops(div, visual=False)
     # org_count = count_ops(org_rel_diff)
     return is_almost_equivalent(org_rel_diff, left_minus_right, tol=epsilon_for_equal_for_randomlySample,
-                if_print=False)
+                if_print=ONLY_PRINT_WHEN_CALLED_FOR_DEBUG,)
     # if whether_data_with_unit(org_rel_diff,units_expression) and 0:
     #     #So the original equation is like : M_A = 1\kg
     #     if whether_data_with_unit(div,units_expression):
@@ -618,7 +646,7 @@ def comparing_rel(rel1, rel2, strict_comparing_inequalities = False,  **kwargs):
 def whether_rel_latex_correct(rel_latex,answer_latex,
                                constants_latex_expression=None,
                                strict_comparing_inequalities=False,
-                               epsilon_for_equal=1e-2,
+                               epsilon_for_equal=1e-5,
                                tolerable_diff_fraction = TOLERABLE_DIFF_FRACTION,
                                tolerable_diff_max = TOLERABLE_DIFF_MAX,
                                **kwargs):
@@ -670,17 +698,17 @@ def format_units_latex(unit_expression):
 def whether_rel_latex_correct_with_units(rel_latex,answer_latex,
                                          constants_latex_expression=None,
                                          strict_comparing_inequalities=False,
-                                         epsilon_for_equal=1e-2,
+                                         epsilon_for_equal=1e-5,
                                          tolerable_diff_fraction = TOLERABLE_DIFF_FRACTION,
                                          tolerable_diff_max = TOLERABLE_DIFF_MAX,
-                                         unit_pattern = r"\\units{(.*?)}",
-                                         whole_unit_pattern = r"(\\units{.*?})",
+                                         unit_pattern = r"\\unit{(.*?)}",
+                                         whole_unit_pattern = r"(\\unit{.*?})",
                                          units_conversion_dict = {
                                              "\\km": "1000*m",
                                              "\\ms": "0.001*s",
                                              "\\kg": "1000*g",
                                          },
-                                         unit_notation = [r"\U_{relstr}", r"\U_{ansstr}"],
+                                         unit_notation = [r"\U_{relstrunitnotation}", r"\U_{ansstrunitnotation}"],
                                          **kwargs):
     # get unit pattern in rel_latex.
     p = re.compile(unit_pattern)
@@ -697,7 +725,7 @@ def whether_rel_latex_correct_with_units(rel_latex,answer_latex,
     elif len(units_in_rel) == len(units_in_answer) and len(units_in_rel) == 1:
         units_in_rel = units_in_rel[0]
         units_in_answer = units_in_answer[0]
-        # replace the \\units{(.*?)} in rel_latex as r"\unitsInRelLatex", and in answer_latex as r"\unitsInAnswerLatex"
+        # replace the \\unit{(.*?)} in rel_latex as r"\unitsInRelLatex", and in answer_latex as r"\unitsInAnswerLatex"
         # units_in_rel is like 'm/s^2', but I want rel_latex_matched to be like "\units{m/s^2}", to replace what's in the original str.
         p_whole = re.compile(whole_unit_pattern)
         rel_latex_matched = p_whole.findall(rel_latex)[0]
@@ -734,7 +762,7 @@ def whether_rel_latex_correct_with_units(rel_latex,answer_latex,
                                             num_constant_change_iter = 2,
                                             **kwargs)
     else:
-        assert False, "The number of units in rel_latex and answer_latex should be the same, and should be 0 or 1."
+        return False, "The number of units in rel_latex and answer_latex should be the same, and should be 0 or 1."
     
     
     
@@ -796,14 +824,17 @@ if (__name__=="__main__"):
     
     param_list = [
         {
-            "rel_latex": "m = 10 \\units{kg/s^2}",
-            "answer_latex": "m = 10000 \\units{g/s^2}",
-            # "constants_latex_expression": {"\\kg": "1000*g"},
+            "rel_latex": "U(b,r) = -\\frac{h(r)^2}{2} \\cdot \\frac{b^2 + 1}{r^2} * 1000 g",
+            "answer_latex": "U(b,r) = -\\frac{h(r)^2 (b^2 + 1)}{2 r^2} * 1000 g",
+            "constants_latex_expression": {"\\kg": "1000*g"},
+            # kg = 1000 g
+            # e = 2.718281828459045
+            # u = 1/r
         },
     ]
     
     
-    # param_list = [{"rel_latex":"P_{1}=\\frac{U^{2}} {R_{0}} \\sin( w t )^{2} \\units{m/s^2}","answer_latex":"P_{1}(t)=\\frac{U^{2}} {R_{0}} \\sin^{2}( w t ) \\units{0.001*km/s^2}",
+    # param_list = [{"rel_latex":"P_{1}=\\frac{U^{2}} {R_{0}} \\sin( w t )^{2} \\unit{m/s^2}","answer_latex":"P_{1}(t)=\\frac{U^{2}} {R_{0}} \\sin^{2}( w t ) \\unit{0.001*km/s^2}",
     #                "constants_latex_expression":{"\\P_{1}(t)": "P_{1}"}, "direct_string_replace": {"P_{1}{\\left(t \\right)}": "P_{1}"}} ] * Number_Of_Missions
                                         # constant number  # univ const    # unit
     # param_list = [{"rel_latex":"m_a = - m_b + \\kg / (3000000000m/s)^2","answer_latex":"m_a = - m_b + \\kg / (300000000m/s)^2",
