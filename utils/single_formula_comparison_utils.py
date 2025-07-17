@@ -149,6 +149,22 @@ import sympy as sp
 import numpy as np
 from sympy.core.function import AppliedUndef
 
+def replace_all_functions_to_freevars(expr):
+    applied_functions = list(expr.atoms(AppliedUndef))
+    applied_functions_args_dict = dict()
+    for f in applied_functions:
+        if f not in applied_functions_args_dict:
+            applied_functions_args_dict[f] = [str(arg) for arg in f.args]
+            # sort the arguments to ensure consistent naming.
+    applied_functions_args_dict = {f: sorted(args) for f, args in applied_functions_args_dict.items()}
+    
+    repl = {
+        f: sp.Symbol(f"{f.func.__name__}_which_is_a_var_of_"+"_AND_".join(applied_functions_args_dict[f]))
+        for f in applied_functions
+    }
+    expr_replaced = expr.subs(repl)
+    return expr_replaced
+
 def is_almost_equivalent(eq1, eq2, variables=None, tol=1e-6, n_trials=15, sample_range=(-20, 20), if_print=False,
                          max_trials = 20, atleast_trial_when_possible=10, maxmaxtrial=40):
     """
@@ -158,10 +174,12 @@ def is_almost_equivalent(eq1, eq2, variables=None, tol=1e-6, n_trials=15, sample
     if if_print:
         print(f"Comparing using tol {tol} and n_trials {n_trials} for {eq1} and {eq2}")
     if variables is None:
-        functions1 = set(eq1.atoms(AppliedUndef))
-        functions2 = set(eq2.atoms(AppliedUndef))
-        functions_set = functions1.union(functions2)
-        variables = list(eq1.free_symbols.union(eq2.free_symbols))+ list(functions_set)
+        eq1 = replace_all_functions_to_freevars(eq1)
+        eq2 = replace_all_functions_to_freevars(eq2)
+        # functions1 = set(eq1.atoms(AppliedUndef))
+        # functions2 = set(eq2.atoms(AppliedUndef))
+        # functions_set = functions1.union(functions2)
+        variables = list(eq1.free_symbols.union(eq2.free_symbols)) # + list(functions_set)
     if not variables:
         return False, f'no free variable when comparing is_almost_equivalent for {eq1} and {eq2}'
     rng = np.random.default_rng()
@@ -806,9 +824,12 @@ if (__name__=="__main__"):
     
     param_list = [
         {
-            "rel_latex": "U(r) = -\\frac{h^2}{2} \\cdot \\frac{b^2 + 1}{r^2}",
-            "answer_latex": "U(r) = -\\frac{h^2 (b^2 + 1)}{2 r^2}",
+            "rel_latex": "U(b,r) = -\\frac{h(r)^2}{2} \\cdot \\frac{b^2 + 1}{r^2} * 1000 g",
+            "answer_latex": "U(b,r) = -\\frac{h(r)^2 (b^2 + 1)}{2 r^2} * 1000 g",
             "constants_latex_expression": {"\\kg": "1000*g"},
+            # kg = 1000 g
+            # e = 2.718281828459045
+            # u = 1/r
         },
     ]
     
