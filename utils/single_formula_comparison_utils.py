@@ -2,6 +2,9 @@ import re
 from sympy import *
 from sympy.parsing.latex import parse_latex 
 from sympy import latex
+import warnings
+warnings.filterwarnings("ignore", category=DeprecationWarning, message=".*use of fork.*")
+
 units_latex={r'\kg':r'\kg',r's':r's',r'm':r'm',r'A':r'A',r'K':r'K',r'g':r'0.001*\kg'}
 UNITS_LATEX = units_latex
 UNITS_EXPRESSION = {parse_latex(x):units_latex[x] for x in units_latex}
@@ -9,19 +12,89 @@ EPSILON_FOR_EQUAL = 1e-5
 RELA_EPSILON_FOR_ALMOST_CONSTANT_EVAL = 1e-5
 TOLERABLE_DIFF_MAX = 5
 TOLERABLE_DIFF_FRACTION = 0.6
+TIMEOUT = 0.6
 
 ONLY_PRINT_WHEN_CALLED_FOR_DEBUG = False
 if __name__ == "__main__":
     ONLY_PRINT_WHEN_CALLED_FOR_DEBUG = True
 
 
+# import sympy as sp
+# import stopit
+# def solve_with_timeout(eq, var, timeout=1.0):
+#     result = None
+#     with stopit.ThreadingTimeout(timeout) as tt:
+#         result = sp.solve(eq, var)
+#     return result
+
 import sympy as sp
-import stopit
-def solve_with_timeout(eq, var, timeout=0.3):
-    result = None
-    with stopit.ThreadingTimeout(timeout) as tt:
-        result = sp.solve(eq, var)
-    return result
+import os
+import pickle
+import tempfile
+
+
+def solve_with_timeout(eq, var, timeout=0.6):
+    eq_str = str(eq)
+    var_str = str(var)
+
+    # Temporary file to transfer result
+    import random
+    import string
+    # generate a random string suffix, 15-char, each char is a-z, A-Z, 0-9.
+    suffix = ''.join(random.choices(string.ascii_letters + string.digits, k=15))
+    with tempfile.NamedTemporaryFile(delete=True, suffix=suffix) as tmp:
+        pid = os.fork()
+
+        if pid == 0:
+            # Child process
+            try:
+                eq = sp.sympify(eq_str)
+                var = sp.symbols(var_str)
+                result = sp.solve(eq, var)
+                with open(tmp.name, 'wb') as f:
+                    pickle.dump(result, f)
+            except Exception as e:
+                with open(tmp.name, 'wb') as f:
+                    pickle.dump(e, f)
+            os._exit(0)
+
+        else:
+            # Parent process
+            import time
+            start = time.time()
+            while True:
+                pid_done, status = os.waitpid(pid, os.WNOHANG)
+                if pid_done != 0:
+                    break
+                if time.time() - start > timeout:
+                    os.kill(pid, 9)
+                    os.waitpid(pid, 0)
+                    return None
+                time.sleep(0.01)
+
+            # Retrieve result
+            try:
+                with open(tmp.name, 'rb') as f:
+                    result = pickle.load(f)
+                if isinstance(result, Exception):
+                    return None
+                return result
+            except Exception:
+                return None
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 # import sys
 
@@ -35,68 +108,10 @@ def solve_with_timeout(eq, var, timeout=0.3):
 import sympy as sp
 import numpy as np
 np.seterr(all='ignore') 
-
-
-DEBUGGING = False
-with open("org_expr.txt", "w") as f:
-    f.write("")
-with open("ex_expr.txt", "w") as f:
-    f.write("")
-def simplify_latex_expr(expr: str) -> str:
-    if DEBUGGING:
-        org_txt = open("org_expr.txt", "r").read()
-        if expr not in org_txt:
-            with open("org_expr.txt", "a") as f:
-                f.write(expr + "\n")
-            
-    # Remove \left and \right
-    expr = re.sub(r'\\left\s*', '', expr)
-    expr = re.sub(r'\\right\s*', '', expr)
-    
-    # Remove line breaks
-    expr = re.sub(r'(\\\\|\\newline| \\ )', ' ', expr)
-    
-    # Remove spacings including \, \; \: \! and multiple spaces
-    expr = re.sub(r'\\[ ,;:!]', '', expr)
-    expr = expr.strip()
-    
-    # Remove environments like align, equation*, etc.
-    expr = re.sub(r'\\begin\{[a-zA-Z*]+\}', '', expr)
-    expr = re.sub(r'\\end\{[a-zA-Z*]+\}', '', expr)
-    
-    # Handle \text{...}, \mathrm{...}, \operatorname{...}
-    expr = re.sub(r'\\mathrm\{([^}]*)\}', r'\1', expr)
-    expr = re.sub(r'\\operatorname\{([^}]*)\}', r'\1', expr)
-
-    # Optional: strip trailing punctuation like commas or periods
-    expr = expr.strip()
-    expr = re.sub(r'([^\d)])[,\.]\s*$', r'\1', expr)  # end of expression
-    expr = re.sub(r'\s+', ' ', expr)
-
-    # (1) Modify \ddot{something} to \ddot_{something}
-    expr = re.sub(r'\\ddot\{([^\{\}]+)\}', r'\\ddot_{\1}', expr)
-
-    # (2) Add \cdot before brackets after variable/function if contents look like multiplication
-    def repl(match):
-        var = match.group(1)
-        inner = match.group(2)
-        # If there is already * or \cdot or \times after var, skip
-        if re.match(r'.*(\*|\\cdot|\\times)\s*$', var):
-            return match.group(0)
-        # If inner contains +, -, *, /, or \frac, it's multiplication
-        if re.search(r'[\+\-\*/]|\\frac', inner):
-            return f"{var} \\cdot ({inner})"
-        else:
-            return match.group(0)
-    # Only match ( not at start of string, after variable
-    pattern = r'(?<![\w\\])([a-zA-Z][a-zA-Z0-9_]*)\s*\(([^()]*)\)'
-    expr = re.sub(pattern, repl, expr)
-    if DEBUGGING:
-        ex_expr = open("ex_expr.txt", "r").read()
-        if expr not in ex_expr:
-            with open("ex_expr.txt", "a") as f:
-                f.write(expr + "\n")
-    return expr
+if __name__ != "__main__":
+    from utils.data_utils import simplify_latex_expr
+else:
+    from data_utils import simplify_latex_expr
 
 if 0:
     # deprecated, but kept for reference. DO NOT USE NOR DELETE!
@@ -279,6 +294,7 @@ def is_almost_equivalent(eq1, eq2, variables=None, tol=1e-6, n_trials=15, sample
             
             sol1 = solve_with_timeout(eq1_sub, solve_var)
             sol2 = solve_with_timeout(eq2_sub, solve_var)
+
             if sol1 is None or sol2 is None:
                 timeout_var_list.append(solve_var)
                 if if_print:
@@ -875,17 +891,27 @@ if (__name__=="__main__"):
     #             #   {"rel_latex":"E / c^2 = ( - m_{a2} + \\mu_b )^0.5","answer_latex":"E = (-m_{a2} + \\mu_b)^0.5 c^2","constants_latex_expression":{'c': float(300000000)}}]
     # # param_list = [{"rel_latex":"E = m","answer_latex":"0.1E - m/10 = 0","constants_latex_expression":dict(m=3)}, ] * Number_Of_Missions
     
-    
+    Number_Of_Missions = 4
     param_list = [
         {
-            "rel_latex": "U(b,r) = -\\frac{h(r)^2}{2} \\cdot \\frac{b^2 + 1}{r^2} * 1000 g+e",
-            "answer_latex": "U(b,r) = -\\frac{h(r)^2 (b^2 + 1)}{2 r^2} * 1000 g+e",
+            "rel_latex": r"x = \frac{m}{b} \ln ( 1 + \frac{b V_0 t}{m} )",
+            "answer_latex": r"\frac{b}{m}x = \ln(1 + \frac{bV_0}{m}t)",
             "constants_latex_expression": {"\\kg": "1000*g","e": np.e},
             # kg = 1000 g
             # e = 2.718281828459045
             # u = 1/r
         },
-    ]
+    ] * Number_Of_Missions
+    # param_list = [
+    #     {
+    #         "rel_latex": r"x = 1",
+    #         "answer_latex": r"x=1+1-1",
+    #         "constants_latex_expression": {"\\kg": "1000*g","e": np.e},
+    #         # kg = 1000 g
+    #         # e = 2.718281828459045
+    #         # u = 1/r
+    #     },
+    # ] * 10
     
     
     # param_list = [{"rel_latex":"P_{1}=\\frac{U^{2}} {R_{0}} \\sin( w t )^{2} \\unit{m/s^2}","answer_latex":"P_{1}(t)=\\frac{U^{2}} {R_{0}} \\sin^{2}( w t ) \\unit{0.001*km/s^2}",
@@ -895,7 +921,7 @@ if (__name__=="__main__"):
     #                "constants_latex_expression":{"e": np.e, "t": "1*s", "s": "s"}}, ] * Number_Of_Missions
                                         
     start = time.time()
-    for param in tqdm(param_list, desc='testing'):
+    for param in tqdm(param_list[:1], desc='testing'):
         # print(param)
         # print(whether_rel_latex_correct(**param))
         print(whether_rel_latex_correct_with_units_with_only_one_dict_parameter(param))
@@ -903,12 +929,12 @@ if (__name__=="__main__"):
     end = time.time()
     print("Time for one mission: ", end-start)
     
-    # N_Thread = 8
-    # start = time.time()
-    # with Pool(N_Thread) as p:
-    #     r = list(tqdm(p.map(whether_rel_latex_correct_with_only_one_dict_parameter, param_list), total=len(param_list), desc='testing'))
-    # end = time.time()
-    # print("Time for N_Thread = {}: ".format(N_Thread), end-start)
+    N_Thread = 4
+    start = time.time()
+    with Pool(N_Thread) as p:
+        r = list(tqdm(p.map(whether_rel_latex_correct_with_only_one_dict_parameter, param_list), total=len(param_list), desc='testing'))
+    end = time.time()
+    print("Time for N_Thread = {0} and N_mission = {1}: ".format(N_Thread, Number_Of_Missions), end-start)
     # # save r into json file.
     # import json
     # # use 4 as tab indent.
