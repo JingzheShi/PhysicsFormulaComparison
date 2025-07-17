@@ -1,7 +1,7 @@
 
 
 from sympy import *
-from sympy.parsing.latex import parse_latex 
+from sympy.parsing.latex import parse_latex
 from sympy import latex
 units_latex={r'\kg':3,r'\s':7,r'\m':11,r'\A':13,r'\K':17,r'\g':0.003}
 UNITS_LATEX = units_latex

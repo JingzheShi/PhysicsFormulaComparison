@@ -184,7 +184,7 @@
             },
             "formula_2": {
                 "points": 10,
-                "answer_latex": "a_w = 0.01 \\unit{km/s^2}"
+                "answer_latex": "F = m(a*1)"
                 
             }
         },

@@ -9,7 +9,7 @@
         "problem_X": [
             "E_i = (m_1 + m_2) c^2",
             "U(r) = -\\frac{h^2 (b^2 + 1)}{2 r^2}",
-            "a_w = 10 \\unit{m/s^2}"
+            "F = a * m"
         ]
     },
     "student_3":{

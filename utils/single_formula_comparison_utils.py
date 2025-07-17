@@ -36,6 +36,68 @@ import sympy as sp
 import numpy as np
 np.seterr(all='ignore') 
 
+
+DEBUGGING = False
+with open("org_expr.txt", "w") as f:
+    f.write("")
+with open("ex_expr.txt", "w") as f:
+    f.write("")
+def simplify_latex_expr(expr: str) -> str:
+    if DEBUGGING:
+        org_txt = open("org_expr.txt", "r").read()
+        if expr not in org_txt:
+            with open("org_expr.txt", "a") as f:
+                f.write(expr + "\n")
+            
+    # Remove \left and \right
+    expr = re.sub(r'\\left\s*', '', expr)
+    expr = re.sub(r'\\right\s*', '', expr)
+    
+    # Remove line breaks
+    expr = re.sub(r'(\\\\|\\newline| \\ )', ' ', expr)
+    
+    # Remove spacings including \, \; \: \! and multiple spaces
+    expr = re.sub(r'\\[ ,;:!]', '', expr)
+    expr = expr.strip()
+    
+    # Remove environments like align, equation*, etc.
+    expr = re.sub(r'\\begin\{[a-zA-Z*]+\}', '', expr)
+    expr = re.sub(r'\\end\{[a-zA-Z*]+\}', '', expr)
+    
+    # Handle \text{...}, \mathrm{...}, \operatorname{...}
+    expr = re.sub(r'\\mathrm\{([^}]*)\}', r'\1', expr)
+    expr = re.sub(r'\\operatorname\{([^}]*)\}', r'\1', expr)
+
+    # Optional: strip trailing punctuation like commas or periods
+    expr = expr.strip()
+    expr = re.sub(r'([^\d)])[,\.]\s*$', r'\1', expr)  # end of expression
+    expr = re.sub(r'\s+', ' ', expr)
+
+    # (1) Modify \ddot{something} to \ddot_{something}
+    expr = re.sub(r'\\ddot\{([^\{\}]+)\}', r'\\ddot_{\1}', expr)
+
+    # (2) Add \cdot before brackets after variable/function if contents look like multiplication
+    def repl(match):
+        var = match.group(1)
+        inner = match.group(2)
+        # If there is already * or \cdot or \times after var, skip
+        if re.match(r'.*(\*|\\cdot|\\times)\s*$', var):
+            return match.group(0)
+        # If inner contains +, -, *, /, or \frac, it's multiplication
+        if re.search(r'[\+\-\*/]|\\frac', inner):
+            return f"{var} \\cdot ({inner})"
+        else:
+            return match.group(0)
+    # Only match ( not at start of string, after variable
+    pattern = r'(?<![\w\\])([a-zA-Z][a-zA-Z0-9_]*)\s*\(([^()]*)\)'
+    expr = re.sub(pattern, repl, expr)
+    if DEBUGGING:
+        ex_expr = open("ex_expr.txt", "r").read()
+        if expr not in ex_expr:
+            with open("ex_expr.txt", "a") as f:
+                f.write(expr + "\n")
+    return expr
+
 if 0:
     # deprecated, but kept for reference. DO NOT USE NOR DELETE!
     def is_almost_constant(expr, variables, tol=RELA_EPSILON_FOR_ALMOST_CONSTANT_EVAL, n_samples=30, minNumber = 20, max_counter = 40, sample_range=(-20, 20), if_print = False):
@@ -634,6 +696,8 @@ def whether_rel_latex_correct(rel_latex,answer_latex,
                                tolerable_diff_fraction = TOLERABLE_DIFF_FRACTION,
                                tolerable_diff_max = TOLERABLE_DIFF_MAX,
                                **kwargs):
+    rel_latex = simplify_latex_expr(rel_latex)
+    answer_latex = simplify_latex_expr(answer_latex)
     rel = parse_latex(rel_latex)
     answer = parse_latex(answer_latex)
     constants_expression = dict()
