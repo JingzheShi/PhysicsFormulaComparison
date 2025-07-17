@@ -1,4 +1,114 @@
 {
+    "problemExample": {
+        "points": 60,
+        "part_1": {
+            "points": 20,
+            "formula_1": {
+                "points": 10,
+                "answer_latex": "E = m c^2"
+            },
+            "formula_2": {
+                "points": 10,
+                "answer_latex": "F = m a"
+            }
+        },
+        "part_2": {
+            "points": 40,
+            "solution_1": {
+                "points": 40,
+                "floor_1": {
+                    "points": 20,
+                    "formula_1": {
+                        "points": 20,
+                        "answer_latex": "v_x = 10.2 \\unit{m/s}"
+                    }
+                },
+                "floor_2": {
+                    "points": 20,
+                    "formula_1": {
+                        "points": 10,
+                        "answer_latex": "v_y = 15.1 \\unit{m/s}"
+                    }
+                }
+            },
+            "solution_2": {
+                "points": 20,
+                "formula_1": {
+                    "points": 10,
+                    "answer_latex": "v_x = v \\cos(\\theta_0)"
+                },
+                "formula_2": {
+                    "points": 10,
+                    "answer_latex": "v_y = v \\sin(\\theta_0) - g t"
+                }
+            }
+        },
+        "units_conversion_dict": {
+                    "\\km": "1000*m",
+                    "\\ms": "0.001*s",
+                    "\\kg": "1000*g"
+        },
+        "constants": {
+            "e": "2.718281828459045"
+        },
+        "unit_pattern": "\\unit{(.*?)}",
+        "whole_unit_pattern": "\\unit{(.*?)}"
+    },
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    
+
     "problemID1": {
         "points": 10,
         "part_1": {
