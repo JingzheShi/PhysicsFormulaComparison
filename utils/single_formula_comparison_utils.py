@@ -637,16 +637,19 @@ def whether_rel_latex_correct(rel_latex,answer_latex,
     rel = parse_latex(rel_latex)
     answer = parse_latex(answer_latex)
     constants_expression = dict()
-    for x, val in constants_latex_expression.items():
-        new_key = parse_latex(x)
-        if isinstance(val, str):
-            new_val = parse_latex(val)
-        elif  isinstance(val, int) or isinstance(val, float):
-            new_val = val
-        else:
-            # print(x,val,'aweofijapwo;eif')
-            new_val = val
-        constants_expression[new_key] = new_val
+    if constants_latex_expression is not None:
+        for x, val in constants_latex_expression.items():
+            new_key = parse_latex(x)
+            if isinstance(val, str):
+                new_val = parse_latex(val)
+            elif  isinstance(val, int) or isinstance(val, float):
+                new_val = val
+            else:
+                # print(x,val,'aweofijapwo;eif')
+                new_val = val
+            constants_expression[new_key] = new_val
+    else:
+        constants_expression = dict()
     # print(constants_expression,'aweofiajweoifajwe')
     # constants_expression = {parse_latex(x):constants_latex_expression[x] for x in constants_latex_expression}
     return comparing_rel(rel,answer,strict_comparing_inequalities=strict_comparing_inequalities, epsilon_for_equal=epsilon_for_equal,tolerable_diff_fraction = tolerable_diff_fraction,tolerable_diff_max = tolerable_diff_max,constants_expression = constants_expression,
@@ -692,7 +695,8 @@ def whether_rel_latex_correct_with_units(rel_latex,answer_latex,
                                          units_conversion_dict = {
                                              "\\km": "1000*m",
                                              "\\ms": "0.001*s",
-                                             "\\kg": "1000*g",
+                                             "g": "0.001*\\kg",
+                                             "\\Hz": "1/s",
                                          },
                                          unit_notation = [r"\U_{relstrunitnotation}", r"\U_{ansstrunitnotation}"],
                                          **kwargs):
