@@ -10,6 +10,10 @@ RELA_EPSILON_FOR_ALMOST_CONSTANT_EVAL = 1e-5
 TOLERABLE_DIFF_MAX = 5
 TOLERABLE_DIFF_FRACTION = 0.6
 
+ONLY_PRINT_WHEN_CALLED_FOR_DEBUG = False
+if __name__ == "__main__":
+    ONLY_PRINT_WHEN_CALLED_FOR_DEBUG = True
+
 
 import sympy as sp
 import concurrent.futures
@@ -143,6 +147,7 @@ if 0:
 
 import sympy as sp
 import numpy as np
+from sympy.core.function import AppliedUndef
 
 def is_almost_equivalent(eq1, eq2, variables=None, tol=1e-6, n_trials=15, sample_range=(-20, 20), if_print=False,
                          max_trials = 20, atleast_trial_when_possible=10, maxmaxtrial=40):
@@ -153,7 +158,10 @@ def is_almost_equivalent(eq1, eq2, variables=None, tol=1e-6, n_trials=15, sample
     if if_print:
         print(f"Comparing using tol {tol} and n_trials {n_trials} for {eq1} and {eq2}")
     if variables is None:
-        variables = list(eq1.free_symbols.union(eq2.free_symbols))
+        functions1 = set(eq1.atoms(AppliedUndef))
+        functions2 = set(eq2.atoms(AppliedUndef))
+        functions_set = functions1.union(functions2)
+        variables = list(eq1.free_symbols.union(eq2.free_symbols))+ list(functions_set)
     if not variables:
         return False, f'no free variable when comparing is_almost_equivalent for {eq1} and {eq2}'
     rng = np.random.default_rng()
@@ -213,12 +221,12 @@ def is_almost_equivalent(eq1, eq2, variables=None, tol=1e-6, n_trials=15, sample
             if len(vals1) != len(vals2):
                 ineq_trials += 1
                 if if_print:
-                    print(f"Trial {trial}: {solve_var} | sol1={vals1}, sol2={vals2}, which are NOT considered equivalent")
+                    print(f"Trial {trial}: {solve_var} | sol1={vals1}, sol2={vals2}, which are NOT considered equivalent. Vars equal to: {variables}, subs={subs}")
                 continue_flag = True
             elif len(vals1) == 0:
                 failed_trials += 1
                 if if_print:
-                    print(f"Trial {trial}: {solve_var} | sol1={vals1}, sol2={vals2}, which are all empty, so failed trial")
+                    print(f"Trial {trial}: {solve_var} | sol1={vals1}, sol2={vals2}, which are all empty, so failed trial. Vars equal to: {variables}, subs={subs}")
                 continue_flag = True
             if continue_flag:
                 continue
@@ -248,7 +256,7 @@ def is_almost_equivalent(eq1, eq2, variables=None, tol=1e-6, n_trials=15, sample
                     all_match = False
                     break
             if if_print:
-                print(f"Trial {trial}: {solve_var} | sol1={vals1_sorted}, sol2={vals2_sorted}, all_match={all_match}: relaDiff = {diff_list} (when sol=0, this is Diff)")
+                print(f"Trial {trial}: {solve_var} | sol1={vals1_sorted}, sol2={vals2_sorted}, all_match={all_match}: relaDiff = {diff_list} (when sol=0, this is Diff). Vars equal to: {variables}, subs={subs}")
             if all_match:
                 passed_trials += 1
             else:
@@ -355,7 +363,7 @@ def same_rel_metric(div,org_rel_diff,left_minus_right, **kwargs):
     # div_count = count_ops(div, visual=False)
     # org_count = count_ops(org_rel_diff)
     return is_almost_equivalent(org_rel_diff, left_minus_right, tol=epsilon_for_equal_for_randomlySample,
-                if_print=False)
+                if_print=ONLY_PRINT_WHEN_CALLED_FOR_DEBUG,)
     # if whether_data_with_unit(org_rel_diff,units_expression) and 0:
     #     #So the original equation is like : M_A = 1\kg
     #     if whether_data_with_unit(div,units_expression):
@@ -798,9 +806,9 @@ if (__name__=="__main__"):
     
     param_list = [
         {
-            "rel_latex": "m = 10 \\unit{kg/s^2}",
-            "answer_latex": "m = 10000 \\unit{g/s^2}",
-            # "constants_latex_expression": {"\\kg": "1000*g"},
+            "rel_latex": "U(r) = -\\frac{h^2}{2} \\cdot \\frac{b^2 + 1}{r^2}",
+            "answer_latex": "U(r) = -\\frac{h^2 (b^2 + 1)}{2 r^2}",
+            "constants_latex_expression": {"\\kg": "1000*g"},
         },
     ]
     

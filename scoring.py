@@ -14,16 +14,8 @@ def parse_arguements():
     parser.add_argument('--N_process',type=int,default=14)
     
     return parser.parse_args()
-def convert_constant_lists_to_sets(d):
-    if isinstance(d, dict):
-        for k, v in d.items():
-            if isinstance(v, dict):
-                convert_constant_lists_to_sets(v)
-            elif 'constant' in k and isinstance(v, list):
-                d[k] = set(v)
-    elif isinstance(d, list):
-        for item in d:
-            convert_constant_lists_to_sets(item)
+
+
 if __name__ == '__main__':
     args = parse_arguements()
     print("args:")
