@@ -16,7 +16,6 @@ if __name__ == "__main__":
 
 
 import sympy as sp
-import concurrent.futures
 import stopit
 def solve_with_timeout(eq, var, timeout=0.3):
     result = None
@@ -655,8 +654,10 @@ def whether_rel_latex_correct(rel_latex,answer_latex,
     constants_expression = dict()
     for x, val in constants_latex_expression.items():
         new_key = parse_latex(x)
-        if isinstance(val, str) or isinstance(val, int) or isinstance(val, float):
+        if isinstance(val, str):
             new_val = parse_latex(val)
+        elif  isinstance(val, int) or isinstance(val, float):
+            new_val = val
         else:
             # print(x,val,'aweofijapwo;eif')
             new_val = val
@@ -824,9 +825,9 @@ if (__name__=="__main__"):
     
     param_list = [
         {
-            "rel_latex": "U(b,r) = -\\frac{h(r)^2}{2} \\cdot \\frac{b^2 + 1}{r^2} * 1000 g",
-            "answer_latex": "U(b,r) = -\\frac{h(r)^2 (b^2 + 1)}{2 r^2} * 1000 g",
-            "constants_latex_expression": {"\\kg": "1000*g"},
+            "rel_latex": "U(b,r) = -\\frac{h(r)^2}{2} \\cdot \\frac{b^2 + 1}{r^2} * 1000 g+e",
+            "answer_latex": "U(b,r) = -\\frac{h(r)^2 (b^2 + 1)}{2 r^2} * 1000 g+e",
+            "constants_latex_expression": {"\\kg": "1000*g","e": np.e},
             # kg = 1000 g
             # e = 2.718281828459045
             # u = 1/r
