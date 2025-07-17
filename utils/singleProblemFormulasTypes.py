@@ -12,6 +12,8 @@ default_dct = {"to_be_calculated":dict(),"constants":dict(),"universe_constants"
                "units_conversion_dict":UNITS_CONVERSION_DICT
                }
 
+from copy import deepcopy
+
 class Formula():
     def __init__(self,dct,prefix_str,type,**kwargs):
         assert type == "formula", "Formula type need to be formula"
@@ -28,7 +30,7 @@ class Formula():
             if item in dct:
                 self.utils_dct[item] = dct[item]
             elif item in kwargs:
-                self.utils_dct[item] = kwargs[item].copy()
+                self.utils_dct[item] = deepcopy(kwargs[item])#.copy()
             else:
                 self.utils_dct[item] = default_dct[item]
         self.utils_dct["universe_constants"] = self.utils_dct["universe_constants"].copy()

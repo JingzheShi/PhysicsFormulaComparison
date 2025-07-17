@@ -2,7 +2,7 @@ import re
 from sympy import *
 from sympy.parsing.latex import parse_latex 
 from sympy import latex
-units_latex={r'\kg':3,r'\s':7,r'\m':11,r'\A':13,r'\K':17,r'\g':0.003}
+units_latex={r'\kg':r'\kg',r's':r's',r'm':r'm',r'A':r'A',r'K':r'K',r'g':r'0.001*\kg'}
 UNITS_LATEX = units_latex
 UNITS_EXPRESSION = {parse_latex(x):units_latex[x] for x in units_latex}
 EPSILON_FOR_EQUAL = 1e-5
@@ -344,22 +344,7 @@ def same_rel_metric(div,org_rel_diff,left_minus_right, **kwargs):
         epsilon_for_equal = kwargs["epsilon_for_equal"]
     else:
         epsilon_for_equal = EPSILON_FOR_EQUAL
-    if "tolerable_diff_max" in kwargs:
-        tolerable_diff_max = kwargs["tolerable_diff_max"]
-    else:
-        tolerable_diff_max = TOLERABLE_DIFF_MAX
-    if "tolerable_diff_fraction" in kwargs:
-        tolerable_diff_fraction = kwargs["tolerable_diff_fraction"]
-    else:
-        tolerable_diff_fraction = TOLERABLE_DIFF_FRACTION
-    if "constants_expression" in kwargs.keys():
-        units_expression = kwargs["constants_expression"].keys()
-    else:
-        units_expression = UNITS_EXPRESSION.keys()
-    if "constants_expression" in kwargs.keys():
-        units_expression_weight = kwargs["constants_expression"]
-    else:
-        units_expression_weight = UNITS_EXPRESSION
+    
     if "epsilon_for_equal_for_randomlySample" in kwargs:
         assert False, 'this is deprecated and should be parsed in with `epsilon_for_equal`'
         epsilon_for_equal_for_randomlySample = kwargs["epsilon_for_equal_for_randomlySample"]
