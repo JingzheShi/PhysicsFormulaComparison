@@ -12,7 +12,7 @@ EPSILON_FOR_EQUAL = 1e-5
 RELA_EPSILON_FOR_ALMOST_CONSTANT_EVAL = 1e-5
 TOLERABLE_DIFF_MAX = 5
 TOLERABLE_DIFF_FRACTION = 0.6
-TIMEOUT = 0.6
+TIMEOUT = 0.4
 
 ONLY_PRINT_WHEN_CALLED_FOR_DEBUG = False
 if __name__ == "__main__":
@@ -31,56 +31,66 @@ import sympy as sp
 import os
 import pickle
 import tempfile
+import random
+import string
+import time
 
 
 def solve_with_timeout(eq, var, timeout=0.6):
     eq_str = str(eq)
     var_str = str(var)
 
-    # Temporary file to transfer result
-    import random
-    import string
-    # generate a random string suffix, 15-char, each char is a-z, A-Z, 0-9.
+    # Generate a random filename suffix
     suffix = ''.join(random.choices(string.ascii_letters + string.digits, k=15))
-    with tempfile.NamedTemporaryFile(delete=True, suffix=suffix) as tmp:
-        pid = os.fork()
 
-        if pid == 0:
-            # Child process
-            try:
-                eq = sp.sympify(eq_str)
-                var = sp.symbols(var_str)
-                result = sp.solve(eq, var)
-                with open(tmp.name, 'wb') as f:
-                    pickle.dump(result, f)
-            except Exception as e:
-                with open(tmp.name, 'wb') as f:
-                    pickle.dump(e, f)
-            os._exit(0)
+    # Create a temporary file without auto-delete
+    tmp = tempfile.NamedTemporaryFile(delete=False, suffix=suffix)
+    tmp.close()  # Close it so the child process can open it independently
+    tmp_path = tmp.name
 
-        else:
-            # Parent process
-            import time
-            start = time.time()
-            while True:
-                pid_done, status = os.waitpid(pid, os.WNOHANG)
-                if pid_done != 0:
-                    break
-                if time.time() - start > timeout:
-                    os.kill(pid, 9)
-                    os.waitpid(pid, 0)
-                    return None
-                time.sleep(0.01)
+    pid = os.fork()
 
-            # Retrieve result
-            try:
-                with open(tmp.name, 'rb') as f:
-                    result = pickle.load(f)
-                if isinstance(result, Exception):
-                    return None
-                return result
-            except Exception:
+    if pid == 0:
+        # Child process
+        try:
+            eq = sp.sympify(eq_str)
+            var = sp.symbols(var_str)
+            result = sp.solve(eq, var)
+            with open(tmp_path, 'wb') as f:
+                pickle.dump(result, f)
+        except Exception as e:
+            with open(tmp_path, 'wb') as f:
+                pickle.dump(e, f)
+        os._exit(0)
+
+    else:
+        # Parent process
+        start = time.time()
+        while True:
+            pid_done, status = os.waitpid(pid, os.WNOHANG)
+            if pid_done != 0:
+                break
+            if time.time() - start > timeout:
+                os.kill(pid, 9)
+                os.waitpid(pid, 0)
+                if os.path.exists(tmp_path):
+                    os.remove(tmp_path)
                 return None
+            time.sleep(0.01)
+
+        # Retrieve result
+        try:
+            with open(tmp_path, 'rb') as f:
+                result = pickle.load(f)
+        except Exception:
+            result = None
+
+        if os.path.exists(tmp_path):
+            os.remove(tmp_path)
+
+        if isinstance(result, Exception):
+            return None
+        return result
 
 
 
@@ -891,7 +901,7 @@ if (__name__=="__main__"):
     #             #   {"rel_latex":"E / c^2 = ( - m_{a2} + \\mu_b )^0.5","answer_latex":"E = (-m_{a2} + \\mu_b)^0.5 c^2","constants_latex_expression":{'c': float(300000000)}}]
     # # param_list = [{"rel_latex":"E = m","answer_latex":"0.1E - m/10 = 0","constants_latex_expression":dict(m=3)}, ] * Number_Of_Missions
     
-    Number_Of_Missions = 4
+    Number_Of_Missions = 20
     param_list = [
         {
             "rel_latex": r"x = \frac{m}{b} \ln ( 1 + \frac{b V_0 t}{m} )",
@@ -929,7 +939,7 @@ if (__name__=="__main__"):
     end = time.time()
     print("Time for one mission: ", end-start)
     
-    N_Thread = 4
+    N_Thread = 14
     start = time.time()
     with Pool(N_Thread) as p:
         r = list(tqdm(p.map(whether_rel_latex_correct_with_only_one_dict_parameter, param_list), total=len(param_list), desc='testing'))
