@@ -5,9 +5,6 @@ from sympy import latex
 import warnings
 warnings.filterwarnings("ignore", category=DeprecationWarning, message=".*use of fork.*")
 
-import warnings
-warnings.filterwarnings("ignore", category=DeprecationWarning, message=".*use of fork.*")
-
 units_latex={r'\kg':r'\kg',r's':r's',r'm':r'm',r'A':r'A',r'K':r'K',r'g':r'0.001*\kg'}
 UNITS_LATEX = units_latex
 UNITS_EXPRESSION = {parse_latex(x):units_latex[x] for x in units_latex}
@@ -16,20 +13,11 @@ RELA_EPSILON_FOR_ALMOST_CONSTANT_EVAL = 1e-5
 TOLERABLE_DIFF_MAX = 5
 TOLERABLE_DIFF_FRACTION = 0.6
 TIMEOUT = 0.4
-TIMEOUT = 0.4
 
 ONLY_PRINT_WHEN_CALLED_FOR_DEBUG = False
 if __name__ == "__main__":
     ONLY_PRINT_WHEN_CALLED_FOR_DEBUG = True
 
-
-# import sympy as sp
-# import stopit
-# def solve_with_timeout(eq, var, timeout=1.0):
-#     result = None
-#     with stopit.ThreadingTimeout(timeout) as tt:
-#         result = sp.solve(eq, var)
-#     return result
 
 # import sympy as sp
 # import stopit
@@ -103,83 +91,6 @@ def solve_with_timeout(eq, var, timeout=0.6):
         if isinstance(result, Exception):
             return None
         return result
-import os
-import pickle
-import tempfile
-import random
-import string
-import time
-
-
-def solve_with_timeout(eq, var, timeout=0.6):
-    eq_str = str(eq)
-    var_str = str(var)
-
-    # Generate a random filename suffix
-    suffix = ''.join(random.choices(string.ascii_letters + string.digits, k=15))
-
-    # Create a temporary file without auto-delete
-    tmp = tempfile.NamedTemporaryFile(delete=False, suffix=suffix)
-    tmp.close()  # Close it so the child process can open it independently
-    tmp_path = tmp.name
-
-    pid = os.fork()
-
-    if pid == 0:
-        # Child process
-        try:
-            eq = sp.sympify(eq_str)
-            var = sp.symbols(var_str)
-            result = sp.solve(eq, var)
-            with open(tmp_path, 'wb') as f:
-                pickle.dump(result, f)
-        except Exception as e:
-            with open(tmp_path, 'wb') as f:
-                pickle.dump(e, f)
-        os._exit(0)
-
-    else:
-        # Parent process
-        start = time.time()
-        while True:
-            pid_done, status = os.waitpid(pid, os.WNOHANG)
-            if pid_done != 0:
-                break
-            if time.time() - start > timeout:
-                os.kill(pid, 9)
-                os.waitpid(pid, 0)
-                if os.path.exists(tmp_path):
-                    os.remove(tmp_path)
-                return None
-            time.sleep(0.01)
-
-        # Retrieve result
-        try:
-            with open(tmp_path, 'rb') as f:
-                result = pickle.load(f)
-        except Exception:
-            result = None
-
-        if os.path.exists(tmp_path):
-            os.remove(tmp_path)
-
-        if isinstance(result, Exception):
-            return None
-        return result
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -394,7 +305,6 @@ def is_almost_equivalent(eq1, eq2, variables=None, tol=1e-6, n_trials=15, sample
             
             sol1 = solve_with_timeout(eq1_sub, solve_var)
             sol2 = solve_with_timeout(eq2_sub, solve_var)
-
 
             if sol1 is None or sol2 is None:
                 timeout_var_list.append(solve_var)
@@ -1027,17 +937,6 @@ if (__name__=="__main__"):
     #         # u = 1/r
     #     },
     # ] * 10
-    ] * Number_Of_Missions
-    # param_list = [
-    #     {
-    #         "rel_latex": r"x = 1",
-    #         "answer_latex": r"x=1+1-1",
-    #         "constants_latex_expression": {"\\kg": "1000*g","e": np.e},
-    #         # kg = 1000 g
-    #         # e = 2.718281828459045
-    #         # u = 1/r
-    #     },
-    # ] * 10
     
     
     # param_list = [{"rel_latex":"P_{1}=\\frac{U^{2}} {R_{0}} \\sin( w t )^{2} \\unit{m/s^2}","answer_latex":"P_{1}(t)=\\frac{U^{2}} {R_{0}} \\sin^{2}( w t ) \\unit{0.001*km/s^2}",
@@ -1047,7 +946,6 @@ if (__name__=="__main__"):
     #                "constants_latex_expression":{"e": np.e, "t": "1*s", "s": "s"}}, ] * Number_Of_Missions
                                         
     start = time.time()
-    for param in tqdm(param_list[:1], desc='testing'):
     for param in tqdm(param_list[:1], desc='testing'):
         # print(param)
         # print(whether_rel_latex_correct(**param))

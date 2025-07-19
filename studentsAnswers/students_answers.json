@@ -9,7 +9,7 @@
         "problem_X": [
             "E_i = (m_1 + m_2) c^2",
             "U(r) = -\\frac{h^2 (b^2 + 1)}{2 r^2}",
-            "F(m,a) = a(\\sin b,r) m"
+            "F(r,m) = m(a*1)"
         ]
     },
     "student_3":{
