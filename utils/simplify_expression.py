@@ -1,5 +1,5 @@
 import re
-DEBUGGING=True
+DEBUGGING=False
 FUNCTION_FOR_ADDING_TIMES_BEFORE_NON_FUNCTIONAL_BRACKETS = True # must be true, just use a if so you can fold it.
 if FUNCTION_FOR_ADDING_TIMES_BEFORE_NON_FUNCTIONAL_BRACKETS:
     import regex                            # pip install regex
