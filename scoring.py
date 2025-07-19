@@ -11,7 +11,7 @@ def parse_arguements():
     parser = ArgumentParser()
     parser.add_argument('--problem_formulas_location', type=str, default='problemFormulas/questions_config.json')
     parser.add_argument('--students_answers_location', type=str, default='studentsAnswers/students_answers.json')
-    parser.add_argument('--N_process',type=int,default=14)
+    parser.add_argument('--N_process',type=int,default=20)
     
     return parser.parse_args()
 

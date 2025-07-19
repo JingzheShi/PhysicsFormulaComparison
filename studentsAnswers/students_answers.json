@@ -9,12 +9,39 @@
         "problem_X": [
             "E_i = (m_1 + m_2) c^2",
             "U(r) = -\\frac{h^2 (b^2 + 1)}{2 r^2}",
-            "F = a * m"
+            "F(m,a) = a(\\sin b,r) m"
         ]
     },
     "student_3":{
         "problem_X": [
             "E_i = (m_1 + m_2) c^2",
+            "E_f = (m_1 + m_2) c^2 + mgh"
+        ]
+    },
+    "student_4":{
+        "problem_X": [
+            "E_i = (m_1 + m_2) c^2",
+            "U(r) = -\\frac{h^2 (b^2 + 1)}{2 r^2}",
+            "F(m,a) = a(\\sin b,r) m",
+            "E_f = (m_1 + m_2) c^2 + mgh"
+        ]
+    },
+    "student_5":{
+        "problem_X": [
+            "E_i = (m_1 + m_2) c^2",
+            "U(r) = -\\frac{h^2 (b^2 + 1)}{2 r^2}",
+            "F(m,a) = a(\\sin b,r) m",
+            "E_f = (m_1 + m_2) c^2 + mgh",
+            "F(m,a) = a(\\sin b,r) m"
+        ]
+    },
+    "student_6":{
+        "problem_X": [
+            "E_i = (m_1 + m_2) c^2",
+            "U(r) = -\\frac{h^2 (b^2 + 1)}{2 r^2}",
+            "F(m,a) = a(\\sin b,r) m",
+            "E_f = (m_1 + m_2) c^2 + mgh",
+            "F(m,a) = a(\\sin b,r) m",
             "E_f = (m_1 + m_2) c^2 + mgh"
         ]
     }

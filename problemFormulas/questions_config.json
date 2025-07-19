@@ -184,7 +184,7 @@
             },
             "formula_2": {
                 "points": 10,
-                "answer_latex": "F = m(a*1)"
+                "answer_latex": "F(a,m) = m\\frac{(a(\\sin b,r))}{1}"
                 
             }
         },
@@ -194,7 +194,8 @@
                     "\\kg": "1000*g"
         },
         "constants": {
-            "\\ccdot": "2.718281828459045"
+            "\\ccdot": 2.718281828459045,
+            "u": "1/r"
         }
         
     }
