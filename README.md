@@ -34,7 +34,7 @@ python scoring.py --problem_formulas_location /path/to/particular/problem_config
 5. 上面那一步做完以后，我们就获得了最终的``All_Students_All_Formula_Scores_dct``，然后我们拿这个里头的每一个``One_Student_All_Formula_Score``，再加上``Node``类下面的``evaluate_points``函数，就获得了这个学生这个题目的分数了捏
 
 
-## 公式比较引擎：tech report。
+## 公式比较引擎：tech report
 
 
 
