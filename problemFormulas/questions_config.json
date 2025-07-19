@@ -184,7 +184,7 @@
             },
             "formula_2": {
                 "points": 10,
-                "answer_latex": "F(m,r) = m(a*1)"
+                "answer_latex": "F(m,a) = a(\\sin b,r) m"
                 
             }
         },
@@ -197,5 +197,26 @@
             "\\ccdot": "2.718281828459045"
         }
         
+    },
+    "problem_Y": {
+        "points": 30,
+        "part_1": {
+            "points": 10,
+            "formula_1": {
+                "points": 10,
+                "answer_latex": "a = b + c"
+            }
+        },
+        "part_2": {
+            "points": 20,
+            "formula_1": {
+                "points": 10,
+                "answer_latex": "d = p + q"
+            },
+            "formula_2": {
+                "points": 10,
+                "answer_latex": "e = a + d"
+            }
+        }
     }
 }

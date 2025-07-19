@@ -6,6 +6,7 @@ class Student_AnswersAndScores_for_SingleProblem():
         self.problemID = problemID
         self.studentLatexLst = latexList
         self.points = 0
+        self.detailed_score = None
         self.studentScoreDct = dict()
         def build_dct(node:Node):
             if node.ChildrenNodeType == "formula":

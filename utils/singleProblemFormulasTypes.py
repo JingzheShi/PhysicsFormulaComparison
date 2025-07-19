@@ -2,7 +2,12 @@ inherit_lst = ["to_be_calculated","constants","universe_constants","units","stri
 
 from utils.default_hyperparams import EPSILON_FOR_EQUAL, UNIT_PATTERN, WHOLE_UNIT_PATTERN, UNITS_CONVERSION_DICT
 
-
+DESCRIPTION = {
+    "formula": "(sum)",
+    "floor": "(min)",
+    "part": "(sum)",
+    "solution": "(max)"
+}
 
 default_dct = {"to_be_calculated":dict(),"constants":dict(),"universe_constants":dict(),"units":dict(),
                "strict_comparing_inequalities":False,
@@ -76,6 +81,7 @@ class Node():
         assert "points" in dct, "Must assign points to part, solution, formula or floor"
 
         self.max_points = dct["points"]
+        self.student_points = -1.0
         
         counter = 0
         counter += 1 if "solution_1" in dct else 0
@@ -121,25 +127,40 @@ class Node():
         
 
             #assert sum([child.max_points for child in self.children_lst]) == self.max_points, "Points in formulas should be equal to the points in its father"
-    def evaluate_points(self,Student_Score_Dct):
+    def evaluate_points(self,Student_Score_Dct, whether_modify_self_student_points=True):
         part_score = float(0)
+        
         if self.ChildrenNodeType == "formula":
             for child in self.children_lst:
                 if child.TokenStr in Student_Score_Dct:
                     part_score += Student_Score_Dct[child.TokenStr]
-            return part_score if part_score <= self.max_points else self.max_points
         elif self.ChildrenNodeType == "part":
             for child in self.children_lst:
-                part_score += child.evaluate_points(Student_Score_Dct)
-            return part_score if part_score <= self.max_points else self.max_points
+                part_score += child.evaluate_points(Student_Score_Dct, whether_modify_self_student_points)
         elif self.ChildrenNodeType == "solution":
-            part_score = max([child.evaluate_points(Student_Score_Dct) for child in self.children_lst])
-            return part_score if part_score <= self.max_points else self.max_points
+            part_score = max([child.evaluate_points(Student_Score_Dct, whether_modify_self_student_points) for child in self.children_lst])
         elif self.ChildrenNodeType == "floor":
-            part_score = min([child.evaluate_points(Student_Score_Dct) for child in self.children_lst])
-            return part_score if part_score <= self.max_points else self.max_points
+            part_score = min([child.evaluate_points(Student_Score_Dct, whether_modify_self_student_points) for child in self.children_lst])
         
         
+        if whether_modify_self_student_points:
+            self.student_points = part_score if part_score <= self.max_points else self.max_points
+        
+        
+        return part_score if part_score <= self.max_points else self.max_points
+
+    def checkScores(self):
+        assert self.type == 'root', "This function should only be called on root node."
+        children_max_scores = [child.max_points for child in self.children_lst]
+        children_student_scores = [child.student_points for child in self.children_lst]
+        return dict(
+            problem_max_score = self.max_points,
+            problem_student_score = self.student_points,
+            subproblems_score_aggregatelogic = self.ChildrenNodeType+DESCRIPTION[self.ChildrenNodeType],
+            subproblems_max_scores = children_max_scores,
+            subproblems_student_scores = children_student_scores
+        )
+
     
 class ProblemFormulas():
     def __init__(self,dct,problemName,problemID,problemLocation = 'unspecified'):
@@ -158,8 +179,15 @@ class ProblemFormulas():
                 for child_node in node.children_lst:
                     Go_Through_Tree(child_node)
         Go_Through_Tree(self.root_node)
-    def evaluate(self,Student_Score_Dct):
-        return self.root_node.evaluate_points(Student_Score_Dct)
+        
+    def evaluate(self,Student_Score_Dct, whether_modify_self_student_points=False):
+        return self.root_node.evaluate_points(Student_Score_Dct, whether_modify_self_student_points)
+    
+    def evaluate_copying_node(self, Student_Score_Dct, whether_modify_self_student_points=True):
+        # this function is used to evaluate the problem formulas without modifying the student points
+        rootnode_copy = deepcopy(self.root_node)
+        rootnode_copy.evaluate_points(Student_Score_Dct, whether_modify_self_student_points)
+        return rootnode_copy
 
 
 

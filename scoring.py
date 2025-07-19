@@ -27,7 +27,7 @@ if __name__ == '__main__':
     problemsList = build_problem_formulas_for_multiProblems(problemFormulas)
     studentsAnswersAndScores = build_Student_AnswersAndScores_for_MultiProblem_from_dict(problemsList,studentsAnswers)
 
-    multiStudent_compare_multiProblem(problemsList, studentsAnswersAndScores, args.N_process)
+    multiStudent_compare_multiProblem(problemsList, studentsAnswersAndScores, args.N_process, return_detailed_score=True)
 
     for studentID, student_answersAndScores_for_problems in studentsAnswersAndScores.items():
         # print("studentID: ", studentID)
@@ -37,6 +37,7 @@ if __name__ == '__main__':
             # print("studentScoreDct: ", this_student_answerAndScore_for_singleProblem.studentScoreDct)
             # print("points: ", this_student_answerAndScore_for_singleProblem.points)
             print(f"Student {studentID} Problem {problemID} Points: {this_student_answerAndScore_for_singleProblem.points}")
+            print(f"Student {studentID} Problem {problemID} Detailed score: {this_student_answerAndScore_for_singleProblem.detailed_score.checkScores()}")
     
     
     

@@ -32,7 +32,7 @@ def compare_problemFormula_with_studentAnswer(dct):
     
     
 
-def multiStudent_compare_multiProblem(problemFormulasList:list,studentsAnswersAndScores:dict,N_process:int):
+def multiStudent_compare_multiProblem(problemFormulasList:list,studentsAnswersAndScores:dict,N_process:int, return_detailed_score = False):
     #studentsAnswersAndScores: dict, key is studentID, value is dict,
         # whose key is problemID, value is of type Student_AnswersAndScores_for_SingleProblem
     
@@ -81,12 +81,15 @@ def multiStudent_compare_multiProblem(problemFormulasList:list,studentsAnswersAn
             if problemID in student_answersAndScores_for_SingleProblem:
                 if problemID not in student_answersAndScores_for_SingleProblem:
                     continue
-                assert problemID in student_answersAndScores_for_SingleProblem, f"Problem ID {problemID} not found in student answers and scores for student {studentID}"
+                # assert problemID in student_answersAndScores_for_SingleProblem, f"Problem ID {problemID} not found in student answers and scores for student {studentID}"
                 student_answersAndScores_for_SingleProblem[problemID].points = problemFormulas.evaluate(
                     student_answersAndScores_for_SingleProblem[problemID].studentScoreDct
                 )
-    
-    
+                if return_detailed_score:
+                    student_answersAndScores_for_SingleProblem[problemID].detailed_score = problemFormulas.evaluate_copying_node(
+                        student_answersAndScores_for_SingleProblem[problemID].studentScoreDct
+                    )
+
     return
     
     
