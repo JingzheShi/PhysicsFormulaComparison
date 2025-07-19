@@ -7,7 +7,7 @@
 
 而请把所有题目的答案以`config.py`形式保存。参考：`problemFormulas/questions_config.json`。
 
-在调用时，请使用如下命令：
+在调用时，请使用如下命令。
 
 ```bash
 python scoring.py --problem_formulas_location /path/to/particular/problem_config.json --students_answers_location /path/to/all_students_answers.json --N_process 8
