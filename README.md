@@ -151,7 +151,7 @@ You see, there are possibly **false negatives** in these cases,
 
 2. Too many failure cases, for example, all vars time-out. This might include things like this:
 
-   $x*(2.56297805587187) - 0.319381238834767=0$.
+   $x^(2.56297805587187) - 0.319381238834767=0$.
 
    I don't know why this naive simple equation might times out, but it just did.
 
