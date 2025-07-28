@@ -168,15 +168,15 @@
         }
     },
     "problem_X": {
-        "points": 30,
-        "floor_1": {
+        "points": 60,
+        "prevsumnode_1": {
             "points": 30,
             "formula_1": {
                 "points": 30,
                 "answer_latex": "E_i = (m_1 + m_2) c^2"
             }
         },
-        "floor_2": {
+        "prevsumnode_2": {
             "points": 30,
             "formula_1": {
                 "points": 20,

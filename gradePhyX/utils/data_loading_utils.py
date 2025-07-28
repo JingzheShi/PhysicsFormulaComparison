@@ -1,4 +1,3 @@
-import torch
 from .singleStudentAnswerTypes import Student_AnswersAndScores_for_SingleProblem
 from .singleProblemFormulasTypes import ProblemFormulas
 
@@ -49,6 +48,7 @@ def _build_Student_AnswersAndScores_for_SingleProblem_from_lst(problemFormulas:P
 
 
 def build_Student_AnswersAndScores_for_SingleProblem_from_pth(problemFormulas:ProblemFormulas,studentsAnswers_dcts_lst_location):
+    import torch
     studentsAnswers_dcts_lst = torch.load(studentsAnswers_dcts_lst_location)
     return _build_Student_AnswersAndScores_for_SingleProblem_from_lst(problemFormulas,studentsAnswers_dcts_lst)
 
@@ -80,7 +80,7 @@ def build_problem_formulas_for_multiProblems(problemDict:dict):
         else:
             problemName = problemID
 
-        print(content)
+        # print(content)
         problemFormulas = ProblemFormulas(content, problemName, problemID, None)
         return_dict[problemID] = problemFormulas
         return_list.append(problemFormulas)

@@ -1,15 +1,16 @@
 inherit_lst = ["to_be_calculated","constants","universe_constants","units","strict_comparing_inequalities","epsilon_for_equal","unit_pattern","whole_unit_pattern","units_conversion_dict"]
 
-from utils.default_hyperparams import EPSILON_FOR_EQUAL, UNIT_PATTERN, WHOLE_UNIT_PATTERN, UNITS_CONVERSION_DICT
+from .default_hyperparams import EPSILON_FOR_EQUAL, UNIT_PATTERN, WHOLE_UNIT_PATTERN, UNITS_CONVERSION_DICT, DEFAULT_UNIVERSE_CONSTANTS
 
 DESCRIPTION = {
     "formula": "(sum)",
     "floor": "(min)",
     "part": "(sum)",
-    "solution": "(max)"
+    "solution": "(max)",
+    "prevsumnode": "(sum of previous nodes for correct ones)",
 }
 
-default_dct = {"to_be_calculated":dict(),"constants":dict(),"universe_constants":dict(),"units":dict(),
+default_dct = {"to_be_calculated":dict(),"constants":dict(),"universe_constants":DEFAULT_UNIVERSE_CONSTANTS,"units":dict(),
                "strict_comparing_inequalities":False,
                "epsilon_for_equal":EPSILON_FOR_EQUAL,
                "unit_pattern":UNIT_PATTERN,
@@ -78,7 +79,7 @@ class Node():
                 parse_dct[inherit_key] = kwargs[inherit_key]
         self.prefix_str = prefix_str
         self.children_lst = []
-        assert "points" in dct, "Must assign points to part, solution, formula or floor"
+        assert "points" in dct, "Must assign points to part, solution, formula, floor or prevsumnode"
 
         self.max_points = dct["points"]
         self.student_points = -1.0
@@ -87,7 +88,8 @@ class Node():
         counter += 1 if "solution_1" in dct else 0
         counter += 1 if "part_1" in dct else 0
         counter += 1 if "floor_1" in dct else 0
-        assert counter <= 1, "Cannot have more than one of solution_1, part_1 or floor_1 in the same node"
+        counter += 1 if "prevsumnode_1" in dct else 0
+        assert counter <= 1, "Cannot have more than one of solution_1, part_1, floor_1 or prevsumnode_1 in the same node"
         
         
         if "solution_1" in dct:
@@ -116,6 +118,13 @@ class Node():
             while ("floor_{}".format(s) in dct):
                 self.children_lst.append(Node(dct["floor_{}".format(s)],self.prefix_str+'*{}'.format(s),"floor",**parse_dct))
                 s=s+1
+            
+        if "prevsumnode_1" in dct:
+            self.ChildrenNodeType = "prevsumnode"
+            s=1
+            while ("prevsumnode_{}".format(s) in dct):
+                self.children_lst.append(Node(dct["prevsumnode_{}".format(s)],self.prefix_str+'~{}'.format(s),"prevsumnode",**parse_dct))
+                s=s+1
 
         if "formula_1" in dct:
             self.ChildrenNodeType = "formula"
@@ -141,7 +150,21 @@ class Node():
             part_score = max([child.evaluate_points(Student_Score_Dct, whether_modify_self_student_points) for child in self.children_lst])
         elif self.ChildrenNodeType == "floor":
             part_score = min([child.evaluate_points(Student_Score_Dct, whether_modify_self_student_points) for child in self.children_lst])
-        
+        elif self.ChildrenNodeType == "prevsumnode":
+            child_scores = [child.evaluate_points(Student_Score_Dct, whether_modify_self_student_points) for child in self.children_lst]
+            child_max_points = [child.max_points for child in self.children_lst]
+            is_correct = [child_score >= child_max_point - 1e-4 for (child_score, child_max_point) in zip(child_scores, child_max_points)]
+                                                        # - 1e-4 is used to avoid floating point precision issues.
+
+            # find the largest index of which is correct is True.
+            if any(is_correct):
+                last_correct_index = max([i for i, correct in enumerate(is_correct) if correct])
+                all_correct_score_sum = sum(child_max_points[:last_correct_index + 1])
+                other_correct_score_sum = sum(child_scores[last_correct_index + 1:]) if last_correct_index + 1 < len(child_scores) else 0.0
+                part_score = all_correct_score_sum + other_correct_score_sum
+            else:
+                last_correct_index = -1
+                part_score = sum(child_scores)
         
         if whether_modify_self_student_points:
             self.student_points = part_score if part_score <= self.max_points else self.max_points

@@ -1,4 +1,4 @@
-# CPHOSS_Formula_Comparison
+# GradePhyX
 # This Only works on Linux/WSL! Not Working on Windows!
 
 ## How to Use

@@ -195,7 +195,7 @@ if __name__ == "__main__":
 
     for expr in test_exprs:
         print(f"\n测试: {expr}")
-        result = add_explicit_times(expr)
+        result = simplify_latex_expr(expr)
         # result = re.sub(pattern, repl, expr)
         # result = re.sub(pattern, repl, result)
         print(f"结果: {result}")

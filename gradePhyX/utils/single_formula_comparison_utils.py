@@ -119,10 +119,7 @@ import sympy as sp
 import numpy as np
 np.seterr(all='ignore') 
 
-if __name__ != "__main__":
-    from utils.simplify_expression import simplify_latex_expr
-else:
-    from simplify_expression import simplify_latex_expr
+from .simplify_expression import simplify_latex_expr
 
 if 0:
     # deprecated, but kept for reference. DO NOT USE NOR DELETE!
@@ -618,8 +615,12 @@ def comparing_rel(rel1, rel2, strict_comparing_inequalities = False,  **kwargs):
         if len(dct_1_str) > 0 or len(dct_2_str) > 0:
             if len(dct_1_str) > 0:
                 dct_1_sympy = {k: sp.sympify(v) for k, v in dct_1_str.items()}
+            else:
+                dct_1_sympy = {}
             if len(dct_2_str) > 0:
                 dct_2_sympy = {k: sp.sympify(v) for k, v in dct_2_str.items()}
+            else:
+                dct_2_sympy = {}
             rel1 = rel1.subs(dct_1_sympy)
             rel2 = rel2.subs(dct_2_sympy)
             # check again for unit expressions. For example, if we substitde "kg=1000*g", while "g=114514", we have to substitute "g" again.
@@ -783,7 +784,7 @@ def format_units_latex(unit_expression):
                             processed_parts.append(sub)
                     else:
                         # If it's a single character or a number, do not prepend '\'
-                        prcessed_parts.append(sub)
+                        processed_parts.append(sub)
                     # processed_parts.append(f'\\{sub}' if len(sub) > 1 else sub)
     
     return ''.join(processed_parts)
@@ -903,7 +904,7 @@ def whether_rel_latex_correct_with_units_with_only_one_dict_parameter(dct):
 # for _ in tqdm(range(Number_Of_Missions)):
 #     whether_rel_latex_correct("E=M c^2","M=E/(3*10^8 m/s^2)^2",constants_latex_expression={'c':float(300000000*7)/(float(11)**2), 'm':7, 's':11,'M':1997})
 
-if (__name__=="__main__"):
+if __name__=="__main__":
     import time
     from tqdm import tqdm
     from multiprocessing import Pool
