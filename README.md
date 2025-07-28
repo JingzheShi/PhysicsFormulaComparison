@@ -5,6 +5,10 @@
 ```bash
 pip install gradephyx
 ```
+or
+```bash
+pip3 install gradephyx
+```
 
 ***Important: This Only works on Linux/WSL! Not Working on Windows!***
 
