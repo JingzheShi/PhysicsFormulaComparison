@@ -3,11 +3,11 @@
 ## Install
 
 ```bash
-pip install gradephyx
+pip install gradePhyX
 ```
 or
 ```bash
-pip3 install gradephyx
+pip3 install gradePhyX
 ```
 
 ***Important: This Only works on Linux/WSL! Not Working on Windows!***
