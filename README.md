@@ -1,44 +1,26 @@
-<<<<<<< HEAD
 # GradePhyX
-=======
-# Physics Formula Comparison.
->>>>>>> refs/remotes/origin/main
-# This Only works on Linux/WSL! Not Working on Windows!
 
-## How to Use
-
-请把所有题目所有学生的答案以`.json`格式保存。参考: `studentsAnswers/students_answers.json`.
-
-而请把所有题目的答案以`config.py`形式保存。参考：`problemFormulas/questions_config.json`。
-
-在调用时，请使用如下命令。
+## Install
 
 ```bash
-python scoring.py --problem_formulas_location /path/to/particular/problem_config.json --students_answers_location /path/to/all_students_answers.json --N_process 8
+pip install gradephyx
 ```
 
-其中N_process规定了公式比较中多进程时的进程数。
+***Important: This Only works on Linux/WSL! Not Working on Windows!***
+
+## Usage
+
+This package contains two main features,
+1. A Formula Comparison Engine for comparing whether two equations (with Physics Quantities) are equivalent.
+2. A pipeline to evaluate multiple 'student answers' of multiple 'problems', and obtain each 'student's' score, in which the scoring structure of a problem can be tree-based. This pipeline supports multiprocessing.
+
+You can find examples of them at `gradePhyX/scoring.py`.
 
 
-## 大致思路（限定在一道题中）
-下面Answer指学生answer，Formula指标答formula
-
-1. 将所有学生的所有Answer字符串放到一个字典或者列表里面。例如说你用列表的话，也许可以实现成这样子：
-``type(All_Students_All_Answer_Strs_lst[0]) = dict``，其中
-``One_Student_One_Answer_Str_lst = All_Student_Answer_Str_lst[0]``
-``One_Student_One_Answer_Str_lst['StudentID']=...``
-``One_Student_One_Answer_Str_lst['AnswerLatexStr']=...``
-2. 另一边，通过``problem.Formula_Dct``,获得这个题所有的标答的formula，其中``problem``是``problemFormulas``类的一个实例
-3. 生成一个``All_Students_All_Formula_Scores_Dct``，其中
-``One_Student_All_Formula_Score = All_Students_All_Formula_Scores_Dct[StudentID]``
-``type(One_Student_All_Formula_Score) = dict``
-``One_Student_All_Formula_Score[TokenStr_of_any_formula] = 0 # initialized to 0``
-4. 对``All_Students_All_Answer_Strs_lst``和``Formula_Dct``里面的每一对匹配``(answer,formula)``，计算它们匹不匹配，然后去更新``All_Students_All_Formula_Scores_Dct[StudentId][FormulaID]``
-在这里，做multiprocessing！！！
-5. 上面那一步做完以后，我们就获得了最终的``All_Students_All_Formula_Scores_dct``，然后我们拿这个里头的每一个``One_Student_All_Formula_Score``，再加上``Node``类下面的``evaluate_points``函数，就获得了这个学生这个题目的分数了捏
 
 
-## 公式比较引擎：tech report
+
+## Formula Comparison Engine：tech report
 
 
 
